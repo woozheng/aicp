@@ -50,13 +50,13 @@
 
 | Human Said / 人类说 | AI Generated / AI 生成 |
 |---|---|
-| 🖥️ Microkernel OS / 微内核 | Process, memory, FS, IPC, scheduler |
-| ⚛️ Quantum simulator / 量子模拟 | Qubits, gates, Shor code, VQE |
-| 🧬 Protein folding / 蛋白质折叠 | 50 MD Agents, live-letter jump |
-| 🏋️ LLM training / 大模型训练 | 3D parallel, All-Reduce, ZeRO |
-| 📐 Riemann Hypothesis / 黎曼猜想 | Riemann-Siegel, Montgomery, GUE |
-| 💾 AI chip / AI 芯片 | ISA, compiler, chiplet interconnect |
-| 👥 HR onboarding / HR 入职 | 5-step workflow, retry/skip/rollback |
+| 🖥️ [Microkernel OS / 微内核](https://github.com/woozheng/aicp-os-kernel) | Process, memory, FS, IPC, scheduler |
+| ⚛️ [Quantum simulator / 量子模拟](https://github.com/woozheng/aicp-quantum) | Qubits, gates, Shor code, VQE |
+| 🧬 [Protein folding / 蛋白质折叠](https://github.com/woozheng/aicp-protein) | 50 MD Agents, live-letter jump |
+| 🏋️ [LLM training / 大模型训练](https://github.com/woozheng/aicp-llm-trainer) | 3D parallel, All-Reduce, ZeRO |
+| 📐 [Riemann Hypothesis / 黎曼猜想](https://github.com/woozheng/aicp-riemann) | Riemann-Siegel, Montgomery, GUE |
+| 💾 [AI chip / AI 芯片](https://github.com/woozheng/aicp-ai-chip) | ISA, compiler, chiplet interconnect |
+
 
 **No domain training data. No framework documentation. Just the protocol.**
 
