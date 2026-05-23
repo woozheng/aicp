@@ -2,7 +2,7 @@
   <h1 align="center">AICP Protocol / AICP 协议</h1>
   <strong>A protocol that lets AI generate any system.</strong>
   <br>
-  <em>一个可以让 AI 生成任何系统的协议。</em>
+  <em>一个可以让 AI 生成任何系统的协议，一个让 AI 连接一切的协议。</em>
   <br>
   <em>No middleware. No scheduler. No state machine. No framework. </em>
   <br>
@@ -15,32 +15,31 @@
 
 <p align="center">
   <a href="https://github.com/woozheng/aicp-eat"><img src="https://img.shields.io/badge/Python-Reference_Implementation-blue?style=flat-square&logo=python" alt="Python Reference"></a>
-  <a href="./AICP_Protocol_v3.md"><img src="https://img.shields.io/badge/Protocol-v3.0-purple?style=flat-square" alt="Protocol v3.0"></a>
+  <a href="./AICP_Protocol_v5.3.md"><img src="https://img.shields.io/badge/Protocol-v5.3-purple?style=flat-square" alt="Protocol v5.3"></a>
   <a href="https://github.com/woozheng/aicp-eat/blob/main/LICENSE"><img src="https://img.shields.io/github/license/woozheng/aicp-eat?style=flat-square" alt="License MIT"></a>
   <a href="https://github.com/woozheng/aicp-raw-experiments"><img src="https://img.shields.io/badge/Experiments-🧪-orange?style=flat-square" alt="Experiments"></a>
 </p>
 
 ---
 
-## How to Use / 使用方法
+## 基于 AICP 协议 的实现项目
 
-| Step | Action / 操作 |
-|:---:|---|
-| 📨 **1** | Give the [Protocol v3.0](AICP_ToAIREAD.md) to any AI — OpenAI, DeepSeek, Qwen, Claude. |
-| 📝 **2** | Describe your requirements. No language restrictions — tell AI what you can deploy, and it will follow. Ask AI to follow the protocol strictly and output a deployment plan. |
-| ⏳ **3** | Wait for AI to generate the complete system. |
-| 📋 **4** | Copy the code. |
-| 🚀 **5** | Run it. |
-
-| 步骤 | 操作 |
-|:---:|---|
-| 📨 **1** | 将 [协议 v3.0](AICP_ToAIREAD.md) 交给任何 AI —— OpenAI、DeepSeek、千问、Claude。 |
-| 📝 **2** | 描述你的需求。没有任何语言环境限制——告诉 AI 你能部署什么，它就会用什么。要求 AI 严格遵循协议，并输出部署方案。 |
-| ⏳ **3** | 等待 AI 生成完整系统。 |
-| 📋 **4** | 拷贝代码。 |
-| 🚀 **5** | 运行。 |
+| 项目 | 语言 | 说明 |
+|------|------|------|
+| **aicp-Engine** | Python | AICP 协议超级引擎，AI自编排，自生产插件。以人类需求为目标。代码工具都是副产品|
+| **[aicp-eat](https://github.com/woozheng/aicp-eat)** | Python/Go/Rust | 吞噬一切：Python 库、Go 库、Rust 库，暴露为 HTTP API，AI 一切皆可 curl |
+| **[aicp-shell](https://github.com/woozheng/aicp-shell)** | Flutter | 吞噬 7 平台硬件能力的 WebView容器，无需任何原生开发，将本地硬件系统能力暴露为页面API，AI 一切皆可 JS |
+| **[aicp-review-bot](https://github.com/woozheng/aicp-review-bot)** | Go | 自动 GitHub 代码审查机器人，由基于 AICP 协议的 Go 引擎的AI 自动生成 |
+| **[biopoiesis](https://github.com/woozheng/biopoiesis)** | Python | AICP 早期构建项目，最小的多智能体协作框架，AICP 协议抽象的基础 |
 
 ---
+## 论文集
+[协议即神经,AGI新范式](./papers/协议即神经：迈向以协议为中心的通用人工智能操作系统.md)
+[AICP与Claud Code、Codex范式对比](./papers/基于AICP统一消息协议的自演化代码智能体架构——与Claude_Code、OpenCode范式对比研究.md)
+[AICP如何开发代码智能体](/papers/基于%20AICP%20开发同类代码智能体产品.md)
+[AICP人机协作新范式](./papers/AICP%20统一消息协议的人机协同架构新范式.md)
+[AICP跨领域研究](./papers/基于%20AICP%20统一消息协议的全域跨学科计算仿真底层架构研究.md)
+[AICP企业数字员工新基座](./papers/基于AICP协议的统一消息驱动记忆体系：面向企业数字员工的协同与隔离双模式架构.md)
 
 ## Past Experiments / 过往实验 🧪
 
@@ -50,13 +49,12 @@
 
 | Human Said / 人类说 | AI Generated / AI 生成 |
 |---|---|
-| 🖥️ Microkernel OS / 微内核 | Process, memory, FS, IPC, scheduler |
-| ⚛️ Quantum simulator / 量子模拟 | Qubits, gates, Shor code, VQE |
-| 🧬 Protein folding / 蛋白质折叠 | 50 MD Agents, live-letter jump |
-| 🏋️ LLM training / 大模型训练 | 3D parallel, All-Reduce, ZeRO |
-| 📐 Riemann Hypothesis / 黎曼猜想 | Riemann-Siegel, Montgomery, GUE |
-| 💾 AI chip / AI 芯片 | ISA, compiler, chiplet interconnect |
-| 👥 HR onboarding / HR 入职 | 5-step workflow, retry/skip/rollback |
+| 🖥️ [Microkernel OS / 微内核](https://github.com/woozheng/aicp-os-kernel) | Process, memory, FS, IPC, scheduler |
+| ⚛️ [Quantum simulator / 量子模拟](https://github.com/woozheng/aicp-quantum) | Qubits, gates, Shor code, VQE |
+| 🧬 [Protein folding / 蛋白质折叠](https://github.com/woozheng/aicp-protein) | 50 MD Agents, live-letter jump |
+| 🏋️ [LLM training / 大模型训练](https://github.com/woozheng/aicp-llm-trainer) | 3D parallel, All-Reduce, ZeRO |
+| 📐 [Riemann Hypothesis / 黎曼猜想](https://github.com/woozheng/aicp-riemann) | Riemann-Siegel, Montgomery, GUE |
+| 💾 [AI chip / AI 芯片](https://github.com/woozheng/aicp-ai-chip) | ISA, compiler, chiplet interconnect |
 
 **No domain training data. No framework documentation. Just the protocol.**
 
@@ -64,5 +62,16 @@
 
 ---
 
+## 💀 协议是灵魂，代码是肉身。
 
-  [MIT](LICENSE) · Dvwoo
+**AICP 协议定义"世界怎么运转"。**
+
+**实现项目证明"世界怎么搭建"。**
+
+**AI 读协议 → AI 理解 → AI 生成系统 → AI 控制硬件**
+
+**这就是 AICP。(以AI为中心的协议，新一代AI开发范式)**
+
+---
+
+[MIT](LICENSE) · Dvwoo
