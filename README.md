@@ -1,8 +1,8 @@
 <p align="center">
   <h1 align="center">AICP Protocol / AICP 协议</h1>
-  <strong>A protocol that lets AI generate any system.</strong>
+  <strong>Agent Interaction & Communication Protocol .</strong>
   <br>
-  <em>一个可以让 AI 生成任何系统的协议，一个让 AI 连接一切的协议。</em>
+  <em>Agent 交互与通信协议。</em>
   <br>
   <em>No middleware. No scheduler. No state machine. No framework. </em>
   <br>
