@@ -23,9 +23,10 @@
 ---
 
 ## 基于 AICP 协议 的实现项目
+
 | 项目 | 语言 | 说明 |
 |------|------|------|
-| **aicp-Engine** | Python | (待发布)AICP 协议超级引擎，AI自编排，自生产插件。以人类需求为目标。代码工具都是副产品 |
+| **[aicp-Engine](https://github.com/woozheng/aicp_engine)** | Python | AICP 协议超级引擎，AI自编排，直接生成应用。以人类需求为目标。代码工具都是副产品 |
 | **[aicp-cli](https://github.com/woozheng/aicp_cli)** | Python | 协议驱动的 LLM 运行时 CLI，世界最小需求执行型 AI CLI，2000+ 行代码，8 个文件，跨平台 |
 | **[aicp-eat](https://github.com/woozheng/aicp-eat)** | Python/Go/Rust | 吞噬一切：Python 库、Go 库、Rust 库，暴露为 HTTP API，AI 一切皆可 curl |
 | **[aicp-shell](https://github.com/woozheng/aicp_shell)** | Flutter | 吞噬 7 平台硬件能力的 WebView容器，无需任何原生开发，将本地硬件系统能力暴露为页面API，AI 一切皆可 JS |
@@ -35,17 +36,19 @@
 ---
 ## 论文集
 
-[协议即神经,AGI新范式](./papers/协议即神经：迈向以协议为中心的通用人工智能操作系统.md)
+[协议正文/AICP-Portocol](./docs/AICP_Protocol_v5.3.md)
 
-[AICP与Claud Code、Codex范式对比](./papers/基于AICP统一消息协议的自演化代码智能体架构——与Claude_Code、OpenCode范式对比研究.md)
+[协议即神经,AGI新范式](./papers/[AICP]协议即神经：迈向以协议为中心的通用人工智能操作系统.md)
 
-[AICP如何开发代码智能体](/papers/基于%20AICP%20开发同类代码智能体产品.md)
+[AICP与Claud Code、Codex范式对比](./papers/[AICP]自演化代码智能体架构——与Claude_Code、OpenCode范式对比研究.md)
 
-[AICP人机协作新范式](./papers/AICP%20统一消息协议的人机协同架构新范式.md)
+[AICP如何开发代码智能体](/papers/[AICP]%20开发同类代码智能体产品.md)
 
-[AICP跨领域研究](./papers/基于%20AICP%20统一消息协议的全域跨学科计算仿真底层架构研究.md)
+[AICP人机协作新范式](./papers/[AICP]%20统一消息协议的人机协同架构新范式.md)
 
-[AICP企业数字员工新基座](./papers/基于AICP协议的统一消息驱动记忆体系：面向企业数字员工的协同与隔离双模式架构.md)
+[AICP跨领域研究](./papers/[AICP]全域跨学科计算仿真底层架构研究.md)
+
+[AICP企业数字员工新基座](./papers/[ACP}]面向企业数字员工的协同与隔离双模式架构.md)
 
 ## Past Experiments / 过往实验 🧪
 

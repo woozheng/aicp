@@ -1,4 +1,6 @@
 # 规则约束涌现式系统设计：基于 AICP 统一消息协议的人机协同架构新范式
+Emergent System Design through Rule Constraints: A New Human-Machine Collaboration Architecture Paradigm Based on the AICP Unified Message Protocol
+
 作者：吴峥
 2026.6
 

@@ -1,4 +1,6 @@
 # 协议即神经：迈向以协议为中心的通用人工智能操作系统
+Protocol as Neural: Toward a Protocol-Centric General Artificial Intelligence Operating System
+
 作者：吴峥
 2026.6
 
@@ -11,6 +13,16 @@
 本文通过操作系统内核设计、AI 加速芯片架构、大模型分布式训练、多智能体长期协作、多模型行为观测五类跨领域对照实验，验证 AICP 协议具备全域普适性；同时基于协议实现跨平台运行时、标准化 HTTP 调用、硬件统一抽象等工程落地形态，其中跨平台 WebView 运行时 Shell 仅作为协议可视化交互载体，不构成范式核心。本文将整套协议体系类比生物神经系统：AICP 协议为神经元突触交互规则，Envelop 为神经递质，全域信息流动即是群体智能的思维过程。相较于传统框架中心化智能体系，本范式从底层消解中间件冗余、破除技术锁定、释放人工智能自主自举演化能力，验证了标准化统一通信协议可作为通用人工智能操作系统的稳态底层基石。
 
 **关键词**：协议中心范式；AICP 通信协议；Envelop 消息载体；无状态多智能体；AI 自举演化；群体涌现智能
+
+# Abstract
+
+The current landscape of general artificial intelligence and multi-agent collaboration is dominated by framework-centric development paradigms. Upper-level frameworks such as LangChain, AutoGen, and MetaGPT claim to simplify development, yet they introduce inherent defects including strong technical lock-in, limited scenario adaptability, and rigid human-defined workflows. Meanwhile, traditional distributed interaction systems — including the Actor model, message queues, and workflow scheduling engines — rely on state storage, centralized scheduling, and lock synchronization mechanisms that fundamentally cannot support the autonomous creation and self-evolution required by artificial intelligence. A core deficiency exists across all current systems: the absence of a standardized, universally unified communication constraint designed for collective intelligence spanning software and hardware domains. Humans must pre-define system organizational forms, while AI is confined to executing limited tasks within prescribed frameworks.
+
+This paper originally proposes the AICP protocol-centric computing paradigm, constructing a unified interaction specification centered on the minimalist message carrier Envelop. Using only four fundamental fields — sender, receiver, intent, and payload — the Envelop carries all system information, abstracting hardware units, software programs, large language models, and distributed computing nodes as stateless interaction entities. The entire paradigm prescribes no business processes, enforces no scheduling logic, and stores no global intermediate state. Complex coordination patterns — serial, parallel, fan-out, aggregation, branching, and iteration — emerge naturally from fundamental routing rules. Under this protocol constraint, artificial intelligence can autonomously generate nodes, orchestrate workflows, construct tools, and iterate systems, with the sole criterion for system effectiveness being whether the original human requirement is completely resolved.
+
+This paper validates the universal applicability of the AICP protocol through five cross-domain controlled experiments: operating system kernel design, AI accelerator chip architecture, large model distributed training, long-term multi-agent collaboration, and multi-model behavioral observation. Engineering implementations including cross-platform runtimes, standardized HTTP invocation, and unified hardware abstraction layers are presented, among which the cross-platform WebView runtime Shell serves merely as a protocol visualization and interaction carrier, not constituting the core of the paradigm. The entire protocol system is analogized to a biological nervous system: the AICP protocol functions as synaptic interaction rules, the Envelop serves as neurotransmitters, and the system-wide information flow represents the thought process of collective intelligence. Compared to traditional framework-centric intelligence systems, this paradigm eliminates middleware redundancy at the foundational level, breaks technical lock-in, and unleashes the autonomous, self-bootstrapping evolutionary capability of artificial intelligence, demonstrating that a standardized unified communication protocol can serve as the stable foundational substrate for a general artificial intelligence operating system.
+
+**Keywords**: Protocol-centric paradigm; AICP communication protocol; Envelop message carrier; Stateless multi-agent; AI self-bootstrapping evolution; Emergent collective intelligence
 
 # 1 引言
 
