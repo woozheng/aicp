@@ -28,6 +28,7 @@
 |------|------|------|
 | **[aicp-Engine](https://github.com/woozheng/aicp_engine)** | Python | AICP 协议超级引擎，AI自编排，直接生成应用。以人类需求为目标。代码工具都是副产品 |
 | **[aicp-cli](https://github.com/woozheng/aicp_cli)** | Python | 协议驱动的 LLM 运行时 CLI，世界最小需求执行型 AI CLI，2000+ 行代码，8 个文件，跨平台 |
+| **[aicp-js-engine](https://github.com/woozheng/aicp-js-engine)** | JavaScript | 纯前端 JS 智能体引擎，浏览器原生运行。LLM 生成代码 → 沙箱执行 → 实时渲染。零依赖，零构建 |
 | **[aicp-eat](https://github.com/woozheng/aicp-eat)** | Python/Go/Rust | 吞噬一切：Python 库、Go 库、Rust 库，暴露为 HTTP API，AI 一切皆可 curl |
 | **[aicp-shell](https://github.com/woozheng/aicp_shell)** | Flutter | 吞噬 7 平台硬件能力的 WebView容器，无需任何原生开发，将本地硬件系统能力暴露为页面API，AI 一切皆可 JS |
 | **[aicp-review-bot](https://github.com/woozheng/aicp-review-bot)** | Go | 自动 GitHub 代码审查机器人，由基于 AICP 协议的 Go 引擎的AI 自动生成 |
