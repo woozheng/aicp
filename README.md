@@ -34,6 +34,32 @@
 | **[biopoiesis](https://github.com/woozheng/biopoiesis)** | Python | Early AICP prototype. The smallest multi-agent collaboration framework. The foundation from which the AICP protocol was abstracted. / AICP 早期构建项目，最小的多智能体协作框架，AICP 协议抽象的基础 |
 
 ---
+## AICP Protocol Ecosystem    
+```text
+┌─────────────────────────────────────────────────────────────────────────┐
+│                          AICP Protocol Core Layer                       │
+│              Envelop Packet + Agent Runtime + Plugin Manager + route()  │
+│                      Standard Spec (Fixed 100 Lines Core Spec)          │
+└─────────────────────────────────────────────────────────────────────────┘
+                                      │
+              ┌───────────────────────┼───────────────────────────────┐
+              ▼                       ▼                               ▼
+┌───────────────────────┐    ┌────────────────────────┐    ┌────────────────────────┐
+│     aicp-engine       │    │     aicp-js-engine     │    │      aicp-shell        │
+│        Python Stack   │    │    JavaScript Runtime  │    │     Flutter Cross UI   │
+├───────────────────────┤    ├────────────────────────┤    ├────────────────────────┤
+│ • HTTP REST Server    │    │ • LLM Native Executor  │    │ • WebView JS Bridge    │
+│ • aicp-cli Core API   │    │ • new Function Sandbox │    │ • Hardware Native API  │
+│ • aicp-eat Data Layer │    │ • Canvas / DOM Render  │    │ • Camera / BLE Module  │
+│ • Global Plugin Sys   │    │ • Remote LLM Fetch SDK │    │ • GPS / FS / Audio I/O │
+│ • Studio Dev API      │    │ • hardware.js Adapter  │◄──►│ Cross Hardware Driver  │
+│ • Docker Containerize │    │ • Any Browser Support  │    │ • 7 Full Platforms     │
+└───────────────────────┘    └────────────────────────┘    └────────────────────────┘
+
+# Local Quick Entry (Unified Access Portal)
+Entry Point: aicp-cli Command Tool | Any Modern Browser (Cross Platform)
+
+```
 
 ## Papers / 论文集
 
