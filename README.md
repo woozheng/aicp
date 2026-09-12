@@ -21,6 +21,12 @@
 </p>
 
 ---
+## AICP VS Traditional Agent Architecture
+
+<p align="center">
+  <img src="docs/aicp.png" alt="AICP vs Traditional Agent Architecture" width="900">
+</p>
+
 ## Projects Based on the AICP Protocol / 基于 AICP 协议的实现项目
 
 | Project / 项目 | Language / 语言 | Description / 说明 |
