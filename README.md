@@ -3,14 +3,6 @@
   <strong>Agent Interaction & Communication Protocol .</strong>
   <br>
   <em>Agent 交互与通信协议。</em>
-  <br>
-  <em>No middleware. No scheduler. No state machine. No framework. </em>
-  <br>
-  <em>没有中间件。没有调度器。没有状态机。没有框架。</em>
-  <br>
-  <em>Don't believe it? Try it yourself.</em>
-  <br>
-  <em>不信？你试试。</em>
 </p>
 
 <p align="center">
@@ -21,11 +13,36 @@
 </p>
 
 ---
+## What is AICP
+
+<p align="center">
+  <img src="docs/aicp_pro.png" alt="What is AICP " width="900">
+</p>
+
+---
+
 ## AICP VS Traditional Agent Architecture
 
 <p align="center">
   <img src="docs/aicp.png" alt="AICP vs Traditional Agent Architecture" width="900">
 </p>
+
+---
+
+## AICP Intergration with Legacy Systems
+
+<p align="center">
+  <img src="docs/aicp_c1.png" alt="AICP Intergration with Legacy Systems" width="900">
+</p>
+
+---
+## AICP's Value 
+
+<p align="center">
+  <img src="docs/aicp_value.png" alt="AICP value " width="900">
+</p>
+
+---
 
 ## Projects Based on the AICP Protocol / 基于 AICP 协议的实现项目
 
