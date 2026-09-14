@@ -7,7 +7,7 @@
 
 <p align="center">
   <a href="https://github.com/woozheng/aicp-eat"><img src="https://img.shields.io/badge/Python-Reference_Implementation-blue?style=flat-square&logo=python" alt="Python Reference"></a>
-  <a href="./AICP_Protocol_v5.3.md"><img src="https://img.shields.io/badge/Protocol-v5.3-purple?style=flat-square" alt="Protocol v5.3"></a>
+  <a href="./docs/AICP_Protocol_v5.3.md"><img src="https://img.shields.io/badge/Protocol-v5.3-purple?style=flat-square" alt="Protocol v5.3"></a>
   <a href="https://github.com/woozheng/aicp-eat/blob/main/LICENSE"><img src="https://img.shields.io/github/license/woozheng/aicp-eat?style=flat-square" alt="License MIT"></a>
   <a href="https://github.com/woozheng/aicp-raw-experiments"><img src="https://img.shields.io/badge/Experiments-🧪-orange?style=flat-square" alt="Experiments"></a>
 </p>
@@ -95,7 +95,7 @@ Entry Point: aicp-cli Command Tool | Any Modern Browser (Cross Platform)
 
 | Paper / 论文 | Link / 链接 |
 |---|---|
-| AICP Protocol v5.4 / 协议正文 | [AICP_Protocol_v5.4.md](./docs/AICP_Protocol_v5.4.md) |
+| AICP Protocol  / 协议正文 | [AICP_Protocol_v5.3.md](./docs/AICP_Protocol_v5.3.md) |
 | Protocol as Neural: A New AGI Paradigm / 协议即神经，AGI新范式 | [paper](./papers/[AICP]协议即神经：迈向以协议为中心的通用人工智能操作系统.md) |
 | AICP vs Claude Code & Codex / AICP与Claude Code、Codex范式对比 | [paper](./papers/[AICP]自演化代码智能体架构——与Claude_Code、OpenCode范式对比研究.md) |
 | How AICP Develops Code Agents / AICP如何开发代码智能体 | [paper](./papers/[AICP]%20开发同类代码智能体产品.md) |
