@@ -1,4 +1,4 @@
-# AICP Protocol v5.3
+# AICP Protocol v5.4
 
 Agent Interaction & Communication Protocol
 
