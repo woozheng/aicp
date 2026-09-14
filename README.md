@@ -20,7 +20,13 @@
 </p>
 
 ---
+## MCP vs ACIP 
 
+<p align="center">
+  <img src="docs/aicp_mcp.png" alt="MCP vs ACIP" width="900">
+</p>
+
+---
 ## AICP VS Traditional Agent Architecture
 
 <p align="center">
