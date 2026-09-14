@@ -1,8 +1,10 @@
-# AICP Protocol v5.4
+# AICP Protocol v5.3
 
-Agent Interaction & Communication Protocol
+Agent Interaction & Communication Protocol 
 
-Three atomic units. One Envelop. Infinite systems.
+**Three atomic units. One Envelop. Infinite systems.**
+
+---
 
 ## 1. Philosophy
 
@@ -11,9 +13,12 @@ Every AI application is information flow. The protocol defines how information f
 - No scheduler
 - No message queue
 - No state machine
-- The Envelop carries its own control information.
 
-**v5.3 进化：** Agent 从退化路由器升级为能力容器。插件自注册成为约定。
+The Envelop carries its own control information.
+
+> **v5.3 evolution**: Agent upgraded from Degenerate Router to Capability Container. Self-registration becomes convention.
+
+---
 
 ## 2. Envelop — The Only Data Carrier
 
@@ -49,21 +54,7 @@ Every AI application is information flow. The protocol defines how information f
 - Setting `receiver` routes to the next plugin
 - Return `None` to terminate the flow
 
-### meta — Reserved Keys
-
-The engine reads a small set of reserved keys from `meta`. Plugins **MUST NOT** use these for other purposes. All other keys are free for plugin use.
-
-| Reserved Key | Set By | Purpose |
-|--------------|--------|---------|
-| callback_receiver | Caller | If set, engine executes the plugin asynchronously and delivers the result to this receiver |
-| is_callback | Engine | Marks an Envelop as a callback delivery |
-| callback_session_id | Caller / Engine | Session context carried through async callbacks |
-
-#### Rules
-
-- Engine **MUST** ignore unknown meta keys
-- Plugins **MUST NOT** use reserved keys for custom purposes
-- Plugins **MAY** add any other key to `meta`
+---
 
 ## 3. Plugin — Processor
 
@@ -71,15 +62,17 @@ Plugin is the only place where intelligence lives. Engine routes. Plugin process
 
 ### Plugin Signature
 
-```
+```text
 fn(envelop, agent) -> envelop | None
 ```
 
 **Input:**
+
 - `envelop` — The Envelop to process
 - `agent` — Capability container injected by engine
 
 **Output:**
+
 - `Envelop` — Continue routing (if receiver is set)
 - `None` — DEAD, terminate the flow
 
@@ -87,11 +80,11 @@ fn(envelop, agent) -> envelop | None
 
 | Responsibilities |
 |------------------|
-| Read envelop.payload |
+| Read `envelop.payload` |
 | Process the data |
-| Write envelop.payload |
-| Write envelop.meta (control info) |
-| Set envelop.receiver to route to next plugin |
+| Write `envelop.payload` |
+| Write `envelop.meta` (control info) |
+| Set `envelop.receiver` to route to next plugin |
 | Return Envelop or None |
 
 ### Plugin Constraints
@@ -107,16 +100,17 @@ fn(envelop, agent) -> envelop | None
 
 ### Plugin Registration (v5.3)
 
-```
+```text
+Plugin registers itself to the Registry.
+
 Registry.register(receiver, plugin_fn)
 ```
 
-**v5.3 约定：** 插件自注册，无需手动集中注册。
-
+> **v5.3 convention**: Plugins self-register. No manual central registration.
 ### Plugin Example (Language Agnostic)
 
-**Plugin:** camera  
-**Receiver:** `device/camera`
+**Plugin:** camera
+**Receiver:** device/camera
 
 **Input Envelop:**
 
@@ -129,9 +123,9 @@ Registry.register(receiver, plugin_fn)
 
 **Processing:**
 
-1. Check `payload["action"] == "take"`
-2. Call camera hardware
-3. Write result to payload
+- Check `payload["action"] == "take"`
+- Call camera hardware
+- Write result to payload
 
 **Output Envelop:**
 
@@ -156,16 +150,16 @@ Engine:
 6. If None → DEAD (natural termination)
 ```
 
+---
+
 ## 4. Agent — Capability Container (v5.3)
 
-| Version | Description |
-|---------|-------------|
-| v3.0 | Agent = Degenerate Router (only routes, no intelligence) |
-| v5.3 | Agent = Capability Container (injected with capabilities) |
+- **v3.0**: Agent = Degenerate Router (only routes, no intelligence)
+- **v5.3**: Agent = Capability Container (injected with capabilities)
 
-Agent is a container. It carries capabilities.
+> Agent is a container. It carries capabilities.
 
-**Engine injects:**
+Engine injects:
 
 - `llm` → Call LLM
 - `system` → Cross-plugin communication
@@ -191,77 +185,53 @@ Plugins can mount new capabilities onto Agent. Because intelligence lives in plu
 
 | Property | Description |
 |----------|-------------|
-| agent.config | System config dict |
-| agent.log | Logger object |
-| agent.data_dir | Path to data directory |
-| agent.base_url | Base URL of engine |
+| `agent.config` | System config dict |
+| `agent.log` | Logger object |
+| `agent.data_dir` | Path to data directory |
+| `agent.base_url` | Base URL of engine |
+
+---
 
 ## 5. Registry — Plugin Address Book
 
-```
+```text
 map[receiver] = plugin_fn
 ```
 
-**v5.3 约定：** 插件自注册
+> **v5.3 convention**: Plugins self-register.
 
-```
+```text
 Plugins register themselves to the Registry.
 No manual central registration.
 
 Registry.register(receiver, plugin_fn)
 ```
 
-**Why?** Because plugin knows its own receiver. Central registration is extra work.
+Why? Because plugin knows its own receiver. Central registration is extra work.
 
-### receiver — Naming
-
-`receiver` is a logical address. Its format is implementation-defined.
-
-**Recommended conventions:**
-
-- Use `/` as hierarchy separator
-- Use lowercase with underscores
-
-**Example:** `os/file_utils_api`, `builtins/tools/aicp_chat`
-
-The engine does not enforce any format. The Registry simply maps the string to a plugin function.
+---
 
 ## 6. Route — Engine Router
 
-Route is the only behavior the engine defines. Everything else is plugin responsibility.
+```
+The engine's responsibilities:
 
-### Route Steps
+- Decrement ttl on each hop; discard when ttl <= 0
+- Look up receiver in Registry; DEAD if not found
+- Execute the plugin
+- If plugin returns Envelop with receiver set → continue routing
+- If plugin returns Envelop with receiver empty → stop
+- If plugin returns None → DEAD
+
+The protocol does not prescribe the order or mechanism of these steps.
+Implementations may differ.
 
 ```
-1.  Receive Envelop
-2.  If receiver is empty → discard
-3.  If ttl <= 0 → DEAD
-4.  ttl -= 1
-5.  If receiver == sender → discard (loop protection)
-6.  Look up receiver in Registry
-7.  Not found → DEAD
-8.  If meta.callback_receiver is set → async mode
-    - Execute plugin in background
-    - Return immediately with status "processing"
-9.  Else → sync mode
-    - Execute plugin with timeout
-10. Plugin returns Envelop or None
-11. If Envelop with receiver set → continue routing (go to step 1)
-12. If Envelop with receiver empty → stop
-13. If None → DEAD
-```
 
-### Notes
-
-- **Loop protection:** `receiver == sender` is discarded to prevent self-loops
-- **TTL:** each hop decrements `ttl` by 1; when `ttl` reaches 0, the message dies
-- **Timeout:** sync mode enforces a timeout; on timeout, the Envelop is returned with an error in `payload`
-- **Async mode:** when `callback_receiver` is set, the engine executes the plugin in the background and delivers the result via a new callback Envelop
-
-### Engine Reference Implementation (~100 lines)
+### Engine Reference Implementation (80 lines)
 
 ```python
-# AICP Engine — reference implementation
+# AICP Engine — 80 lines
 # Any language can implement this.
 
 class Envelop:
@@ -310,6 +280,8 @@ async def route(envelop: Envelop, agent: Agent = None, timeout: float = 300.0) -
         return envelop
 ```
 
+---
+
 ## 7. DEAD — Natural Termination
 
 ```python
@@ -323,27 +295,9 @@ return envelop
 
 No special intent. No error code. Just a receiver that doesn't exist.
 
-## 8. Scope — What the Protocol Does Not Define
+---
 
-This protocol defines message flow only.
-
-It does **not** define:
-
-- **Sandboxing** — plugins run with the same privileges as the engine
-- **Permission control** — no access control is defined at the protocol level
-- **Resource limits** — CPU, memory, and I/O limits are engine concerns
-- **Security policies** — authentication, authorization, and encryption are engine concerns
-- **Persistence** — no state is defined; plugins handle their own storage
-
-These are engine-level concerns. A conforming engine **MAY** implement any of them. The protocol stays out of the way.
-
-The protocol also does **not** define:
-
-- **Return payload structure** — plugins may return any shape. Conventions such as `{"ok": true, "data": {...}}` are recommended but not required
-- **Error classification** — the protocol only specifies that errors are placed in `payload`. How errors are categorized is implementation-defined
-- **Inter-plugin call semantics** — plugins call each other via `agent.system.call()`, but the exact conventions (sender, trace inheritance) are plugin-level decisions
-
-## 9. v5.3 — What Changed
+## 8. v5.3 — What Changed
 
 | Concept | v3.0 | v5.3 |
 |---------|------|------|
@@ -354,7 +308,9 @@ The protocol also does **not** define:
 | Engine | 80 lines | 80 lines (unchanged) |
 | Philosophy | Information flow | Information flow (unchanged) |
 
-## 10. Language Agnostic
+---
+
+## 9. Language Agnostic
 
 Any language can implement this protocol:
 
@@ -366,21 +322,25 @@ Any language can implement this protocol:
 | Rust | struct | async fn | struct | HashMap | async fn |
 | JavaScript | class | async | class | Map | async |
 
-## 11. Why So Simple
+---
+
+## 10. Why So Simple
 
 Because the protocol doesn't do anything. It only routes.
 
-- **Scheduling?** → Plugin writes `meta`
+- **Scheduling?** → Plugin writes meta
 - **Orchestration?** → Plugin calls other plugins
 - **Memory?** → Plugin writes to a file
-- **Termination?** → Plugin returns `None`
+- **Termination?** → Plugin returns None
 - **UI?** → HTML + JS
 
-> The Envelop carries control. The plugin does the work. The engine stays out of the way.
+The Envelop carries control. The plugin does the work. The engine stays out of the way.
 
 That's why it's 80 lines. That's why any language can implement it. That's why AI can understand it.
 
-## 12. Protocol vs Implementation
+---
+
+## 11. Protocol vs Implementation
 
 ```
 Protocol = Pure definition (this document)
@@ -390,19 +350,20 @@ Shell    = Engine + Hardware APIs + 7 platforms
 
 AICP Shell is one implementation. Any language can implement this protocol.
 
-## 13. Version History
+---
+
+## 12. Version History
 
 | Version | Date | Change |
 |---------|------|--------|
 | v3.0 | 2026-05 | Initial protocol definition |
 | v5.3 | 2026-07 | Agent = Capability Container, Self-registration, Engine reference |
-| v5.4 | 2026-08 | Route steps expanded (loop protection, async mode, timeout), Scope section added, meta reserved keys defined |
 
 ---
 
 *The protocol defines soul. Code implements flesh.*
 
-**AICP-Dvwoo&AI. v5.4**
+**AICP-Dvwoo&AI. v5.3**
 
 
 
