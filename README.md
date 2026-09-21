@@ -97,15 +97,14 @@ Entry Point: aicp-cli Command Tool | Any Modern Browser (Cross Platform)
 
 | Paper / 论文 | Link / 链接 |
 |---|---|
-| AICP Protocol  / 协议正文 | [AICP_Protocol_v5.3.md](./docs/AICP_Protocol_v5.3.md) |
+| AICP: A Minimal Protocol for LLM-Native Agent Systems / 最小协议：面向 LLM 原生 Agent 系统的统一归约 | [paper](./papers/[AICP]aicp.md) |
+| AICP Protocol / 协议正文 | [AICP_Protocol_v5.3.md](./docs/AICP_Protocol_v5.3.md) |
 | Protocol as Neural: A New AGI Paradigm / 协议即神经，AGI新范式 | [paper](./papers/[AICP]协议即神经：迈向以协议为中心的通用人工智能操作系统.md) |
 | AICP vs Claude Code & Codex / AICP与Claude Code、Codex范式对比 | [paper](./papers/[AICP]自演化代码智能体架构——与Claude_Code、OpenCode范式对比研究.md) |
 | How AICP Develops Code Agents / AICP如何开发代码智能体 | [paper](./papers/[AICP]%20开发同类代码智能体产品.md) |
 | A New Human-Machine Collaboration Paradigm / AICP人机协作新范式 | [paper](./papers/[AICP]%20统一消息协议的人机协同架构新范式.md) |
 | Cross-Domain Research / AICP跨领域研究 | [paper](./papers/[AICP]全域跨学科计算仿真底层架构研究.md) |
-| Enterprise Digital Employee Foundation / AICP企业数字员工新基座 | [paper](./papers/[ACP}]面向企业数字员工的协同与隔离双模式架构.md) |
-
----
+| Enterprise Digital Employee Foundation / AICP企业数字员工新基座 | [paper](./papers/[AICP]面向企业数字员工的协同与隔离双模式架构.md) |
 
 ## Past Experiments / 过往实验 🧪
 
