@@ -2,40 +2,42 @@
 
 *A Unified Reduction of Actor, Message Bus, Event Sourcing, and Microkernel Paradigms*
 
-Dvwoo  
+**Dvwoo**  
 GitHub: @woozheng
 
 ## Abstract
 
 Contemporary agent frameworks accumulate complexity: state machines, multi-agent schedulers, tool registries, context buses, and lifecycle managers. Each solves a real problem, yet their combination imposes heavy cognitive load on both developers and large language models (LLMs).
 
-We present AICP (Agent Interaction & Communication Protocol), a minimal protocol that reduces the canonical paradigms of distributed computing — Actor model, message bus, event sourcing, microkernel, plugin architecture, and dependency injection — into a single uniform structure: messages flow, plugins react, state accumulates.
+We present AICP (Agent Interaction & Communication Protocol), a minimal protocol that reduces the canonical paradigms of distributed computing—Actor model, message bus, event sourcing, microkernel, plugin architecture, and dependency injection—into a single uniform structure: messages flow, plugins react, state accumulates.
 
 AICP is defined by roughly 200 lines of core specification. It has no agent instances, no context bus, no registry, and no scheduler. Plugins share a single signature (`async def execute(envelop, agent)`), communicate exclusively through a single message type (`Envelop`), and require state to be append-only, with no separate mutable store.
 
-We argue that this reduction is not merely aesthetic. It lowers the cognitive burden on LLMs by requiring them to internalize one concept — message passing — which covers three apparently distinct operations: calling an existing plugin, creating a new plugin, and calling again the newly created plugin. These are not three mechanisms; they are the same mechanism, applied at different moments. The mechanism is self-similar in form: a plugin calling another plugin, an LLM generating a plugin, and an external caller triggering a plugin all go through the same shape. The effects differ, but the differing effect is carried in the returned `Envelop`, so the LLM never needs to learn a second shape. This enables one-shot code generation with minimal context, cross-language replication (Python and TypeScript implementations are structurally identical), and self-bootstrapping agent systems.
+We argue that this reduction is not merely aesthetic. It lowers the cognitive burden on LLMs by requiring them to internalize one concept—message passing—which covers three apparently distinct operations: calling an existing plugin, creating a new plugin, and calling again the newly created plugin. These are not three mechanisms; they are the same mechanism, applied at different moments. The mechanism is self-similar in form: a plugin calling another plugin, an LLM generating a plugin, and an external caller triggering a plugin all go through the same shape. The effects differ, but the differing effect is carried in the returned `Envelop`, so the LLM never needs to learn a second shape.
 
-We introduce a three-tier control plane that separates protocol-level control from negotiable control from implementation-level control, and a failure semantics in which convergence is enforced by the framework, not entrusted to handlers. We state the protocol's boundaries explicitly: it guarantees termination, not success; it guarantees convergence for messages, not for computations; it stays silent about routing policy for failed messages; it enables interoperability without guaranteeing it; and it assumes honest status reporting.
+AICP makes a specific exchange. It gives up provability—it does not prove that negotiation produces a valid agreement, that plugins report honestly, or that computations terminate—and gains cross-language identity and cross-node transparency: a plugin written in one language is understood in another, and a plugin registered on one node is callable from another, neither requiring an adaptation layer. This exchange is not arbitrary: provability requires closure, and cross-language and cross-node reach require openness. A closed system can prove its properties; an open one can reach across boundaries. AICP chooses openness.
 
-We emphasize that AICP is entirely defined by its core — the `Envelop` type, the `route` function, the plugin signature, the plugin lookup space, and the append-only state constraint. Everything else is implementation.
+We introduce a three-tier control plane that separates protocol-level control from negotiable control from implementation-level control, and a failure semantics in which termination is enforced by the framework, not entrusted to handlers. We state the protocol's boundaries explicitly: it guarantees termination, not success; it guarantees convergence for messages, not for computations; it stays silent about routing policy for failed messages; it enables interoperability without guaranteeing it; and it assumes honest status reporting.
+
+We emphasize that AICP is entirely defined by its core—the `Envelop` type, the `route` function, the plugin signature, the plugin lookup space, and the append-only state constraint. Everything else is implementation.
 
 ## 1. Introduction
 
 ### 1.1 The Accumulation Problem
 
-Modern agent frameworks tend to grow by addition. Each new requirement — tool calling, multi-agent coordination, memory, streaming, async callbacks — is met with a new abstraction: a scheduler, a context bus, a memory store, a tool registry, a lifecycle manager. Over time, the framework becomes a layered stack of mechanisms, each locally justified, collectively opaque.
+Modern agent frameworks tend to grow by addition. Each new requirement—tool calling, multi-agent coordination, memory, streaming, async callbacks—is met with a new abstraction: a scheduler, a context bus, a memory store, a tool registry, a lifecycle manager. Over time, the framework becomes a layered stack of mechanisms, each locally justified, collectively opaque.
 
 This accumulation has three costs:
 
 - **Cognitive cost for developers.** Understanding the system requires understanding every layer and its interactions.
-- **Cognitive cost for LLMs.** Generating correct code requires holding many conventions simultaneously — signatures, return shapes, registration rules, lifecycle expectations.
+- **Cognitive cost for LLMs.** Generating correct code requires holding many conventions simultaneously—signatures, return shapes, registration rules, lifecycle expectations.
 - **Portability cost.** Each abstraction tends to be language- and runtime-specific, making cross-language replication a rewrite rather than a translation.
 
 ### 1.2 The Reduction Hypothesis
 
 We hypothesize that most of these abstractions are not independent primitives but variants of a single underlying structure: a message-oriented system in which independent units react to messages, and state accumulates as an append-only record of those reactions.
 
-If this is true, then a protocol built on this single structure — without the additional abstractions — should be able to express everything the layered frameworks express, while imposing far less cognitive load.
+If this is true, then a protocol built on this single structure—without the additional abstractions—should be able to express everything the layered frameworks express, while imposing far less cognitive load.
 
 AICP is an attempt to test this hypothesis.
 
@@ -53,21 +55,22 @@ Nothing else is part of the protocol.
 
 In particular:
 
-- Any particular LLM scheduler — however it prompts, parses, or validates LLM output — is an implementation.
-- Any particular set of generation conventions — how large text is delimited, how reasoning is bounded, how sandboxes are enforced — is an implementation.
-- Any particular tool for sub-agent management or contract discovery — `task_manager`, `contract_agent`, or their equivalents — is an implementation.
-- Any particular state store — an append-only list, a log, a table, a snapshot — is an implementation.
-- Any particular realization of the plugin lookup space — a dictionary, a filesystem, a database, a name service — is an implementation.
-- Any particular mechanism for forcing a return from a stuck plugin — thread interruption, process isolation, a watchdog — is an implementation.
+- Any particular LLM scheduler—however it prompts, parses, or validates LLM output—is an implementation.
+- Any particular set of generation conventions—how large text is delimited, how reasoning is bounded, how sandboxes are enforced—is an implementation.
+- Any particular tool for sub-agent management or contract discovery—`task_manager`, `contract_agent`, or their equivalents—is an implementation.
+- Any particular state store—an append-only list, a log, a table, a snapshot—is an implementation.
+- Any particular realization of the plugin lookup space—a dictionary, a filesystem, a database, a name service—is an implementation.
+- Any particular mechanism for forcing a return from a stuck plugin—thread interruption, process isolation, a watchdog—is an implementation.
 
 We make this distinction explicit because it is the source of AICP's minimality. The protocol is not “a framework with a small core.” It is a core, plus an open space in which implementations may differ.
 
 ### 1.4 Contributions
 
 - We reduce six canonical paradigms to a single protocol of roughly 200 lines.
-- We show that this protocol requires the LLM to learn one concept — message passing — which covers calling, creating, and re-calling alike, because the mechanism is self-similar in form across layers, with differing effects carried in the returned `Envelop`.
+- We show that this protocol requires the LLM to learn one concept—message passing—which covers calling, creating, and re-calling alike, because the mechanism is self-similar in form across layers, with differing effects carried in the returned `Envelop`.
 - We introduce a failure semantics in which termination is enforced by the framework, not entrusted to handlers, together with a three-tier control plane whose boundary is drawn by a two-stage criterion that avoids circularity.
-- We state the protocol's boundaries explicitly: termination not success; convergence for messages not computations; silence about routing policy for failed messages; interoperability enabled but not guaranteed; and honesty of status reporting assumed.
+- We state the protocol's boundaries explicitly: termination, not success; convergence for messages, not computations; silence about routing policy for failed messages; interoperability enabled but not guaranteed; and honesty of status reporting assumed.
+- We state the protocol's exchange explicitly: AICP gives up provability and gains cross-language identity and cross-node transparency. This exchange is not arbitrary; it is forced by a logical opposition between closure and reach.
 - We demonstrate one-shot LLM code generation, cross-language structural identity, self-bootstrapping, and cross-domain generation from a single protocol description.
 
 ## 2. Related Work
@@ -78,7 +81,7 @@ The Actor model (Hewitt, 1973; Agha, 1986) introduced the idea of independent co
 
 AICP preserves the message-passing core of Actor systems but removes the Actor as an entity. There is no actor object, no mailbox, no PID. A “plugin” is a function; a “session” is an identifier; state is append-only.
 
-Unlike the Actor model, AICP does not enforce actor identity or mailbox semantics. This is a deliberate trade: AICP gains determinism and observability at the cost of actor autonomy. Address passing is restricted — addresses are carried in `meta` by convention, not as first-class protocol concepts. As we discuss in §3.8–§3.10, this restriction is bounded by a failure semantics that guarantees termination, and by a three-tier control plane that makes coordination expressible without making it mandatory.
+Unlike the Actor model, AICP does not enforce actor identity or mailbox semantics. This is a deliberate trade: AICP gains determinism and observability at the cost of actor autonomy. Address passing is restricted—addresses are carried in `meta` by convention, not as first-class protocol concepts. As we discuss in §3.8–§3.10, this restriction is bounded by a failure semantics that guarantees termination, and by a three-tier control plane that makes coordination expressible without making it mandatory.
 
 ### 2.2 Message Buses and RPC
 
@@ -86,11 +89,11 @@ Enterprise message buses and RPC systems (CORBA, gRPC) provide a central dispatc
 
 ### 2.3 Event Sourcing
 
-Event sourcing (Fowler, 2005) treats state as the fold of an event log. AICP adopts the append-only constraint directly, but does not prescribe a particular realization. Unlike typical event sourcing, AICP does not separate “events” from “state projections” — the append-only record is read directly by the LLM, with per-entry retention hints (an implementation choice) controlling what is surfaced.
+Event sourcing (Fowler, 2005) treats state as the fold of an event log. AICP adopts the append-only constraint directly, but does not prescribe a particular realization. Unlike typical event sourcing, AICP does not separate “events” from “state projections”—the append-only record is read directly by the LLM, with per-entry retention hints (an implementation choice) controlling what is surfaced.
 
 ### 2.4 Microkernels and Plugin Architectures
 
-Microkernels (Liedtke, 1995) minimize the kernel and push functionality into user-space servers. Plugin architectures (e.g., Eclipse, VS Code) register extensions against a host. AICP combines both: the “kernel” is a routing function; “plugins” are found in a shared namespace. There is no registry — the lookup space is the registry, and its realization is an implementation choice.
+Microkernels (Liedtke, 1995) minimize the kernel and push functionality into user-space servers. Plugin architectures (e.g., Eclipse, VS Code) register extensions against a host. AICP combines both: the “kernel” is a routing function; “plugins” are found in a shared namespace. There is no registry—the lookup space is the registry, and its realization is an implementation choice.
 
 ### 2.5 Dependency Injection
 
@@ -98,19 +101,21 @@ DI frameworks inject capabilities into components. AICP requires that capabiliti
 
 ### 2.6 MCP and Tool Protocols
 
-The Model Context Protocol (MCP) standardizes how LLMs call predefined tools. AICP differs fundamentally: tools (plugins) are not predefined — they are generated, inspected, and repaired at runtime by the LLM itself. AICP is not a tool-calling protocol; it is a tool-creating protocol. And because creating a tool is itself a call in form, the distinction between calling and creating dissolves at the level of form.
+The Model Context Protocol (MCP) standardizes how LLMs call predefined tools. AICP differs fundamentally: tools (plugins) are not predefined—they are generated, inspected, and repaired at runtime by the LLM itself. AICP is not a tool-calling protocol; it is a tool-creating protocol. And because creating a tool is itself a call in form, the distinction between calling and creating dissolves at the level of form.
 
 ### 2.7 CyberOrgs and Resource-Bounded Agents
 
 CyberOrgs (Jamali, 2004) models resource-bounded multi-agent computation over peer-owned networks. It treats control as a first-class abstraction: each cyberorg owns resources and eCash, and hosts other cyberorgs under negotiated contracts. The model provides an operational semantics and proves termination properties.
 
-AICP shares with CyberOrgs the concern for analyzability, but differs in scope. CyberOrgs reifies control as contracts and resources; AICP reifies only the control the protocol itself produces, and leaves the rest to negotiation. Where CyberOrgs enforces coordination through contracts, AICP makes coordination expressible through a negotiable control plane.
+AICP shares with CyberOrgs the concern for analyzability, but differs in scope. CyberOrgs reads as a complete system design: it reifies control, resources, currency, and negotiation into a single coherent model, from operational semantics down to a prototype implementation. That completeness is what makes its transition system and its termination properties possible. It is also what makes it a single system rather than a shared vocabulary: how two independently deployed CyberOrgs would trade resources across their boundaries is not a question the model answers, because the model does not have to—it owns the whole system.
+
+AICP starts from a different place. It is not a system but a protocol for agents that were never deployed together and may not share an implementation. The question AICP had to answer was not “what should control be” but “what must control be reified into, if the protocol is to remain a protocol and not become a system.” The answer is Tier 1 only—`ttl` and `status`. Everything else is Tier 2, which the protocol makes expressible but not enforced. Where CyberOrgs proves dormancy through resource exhaustion, AICP proves termination through `ttl` decrement. Where CyberOrgs enforces coordination through contracts, AICP makes coordination expressible through `meta` exchange. The difference is one of starting point, not of quality.
 
 ### 2.8 Process Calculi
 
 Process calculi (Milner, 1999) formalize concurrent systems as processes exchanging names over channels. AICP shares with process calculi the idea that communication is the primitive, and that structure emerges from communication patterns rather than being imposed by the language.
 
-AICP differs in that it is not a calculus but a protocol. It does not attempt to be a complete formal system; it defines a minimal set of message-shape and control-layer constraints that a runtime must enforce. A formal semantics for AICP — in the style of a labeled transition system over `Envelop` states — is a natural direction for future work, and would establish the termination claims of §3.8 as theorems rather than design arguments (see §10.8).
+AICP differs in that it is not a calculus but a protocol. It does not attempt to be a complete formal system; it defines a minimal set of message-shape and control-layer constraints that a runtime must enforce. A formal semantics for AICP—in the style of a labeled transition system over `Envelop` states—is a natural direction for future work, and would establish the termination claims of §3.8 as theorems rather than design arguments (see §10.8).
 
 ## 3. The AICP Protocol
 
@@ -118,11 +123,11 @@ AICP differs in that it is not a calculus but a protocol. It does not attempt to
 
 AICP is defined by five things, and only five things:
 
-- The `Envelop` type — the sole message type, carrying `sender`, `receiver`, `ttl`, `status`, and `meta`.
-- The `route` function — the sole routing function.
-- The plugin signature — `async def execute(envelop, agent)`, where `envelop` is the message and `agent` is the injected capability container.
-- The plugin lookup space — plugins are found by `receiver` in a shared namespace.
-- The append-only state constraint — state is append-only; there is no separate mutable state store.
+1. The `Envelop` type—the sole message type, carrying `sender`, `receiver`, `ttl`, `status`, and `meta`.
+2. The `route` function—the sole routing function.
+3. The plugin signature—`async def execute(envelop, agent)`, where `envelop` is the message and `agent` is the injected capability container.
+4. The plugin lookup space—plugins are found by `receiver` in a shared namespace.
+5. The append-only state constraint—state is append-only; there is no separate mutable state store.
 
 Everything else in this paper is either:
 
@@ -133,20 +138,20 @@ Everything else in this paper is either:
 
 `Envelop` is the sole message type. It carries:
 
-- `sender`, `receiver` — routing identity
-- `payload` — business content
-- `ttl` — lifecycle
-- `status` — protocol-defined failure state (§3.8)
-- `meta` — negotiable control plane (§3.10)
+- `sender`, `receiver`—routing identity
+- `payload`—business content
+- `ttl`—lifecycle
+- `status`—protocol-defined failure state (§3.8)
+- `meta`—negotiable control plane (§3.10)
 
 `status` handles errors only. It does not carry business state. Its semantics are:
 
-- **Empty status** — no protocol-level error occurred.
-- **Non-empty status** — the value must be one of the protocol-defined failure classes (§3.8).
+- **Empty status**—no protocol-level error occurred.
+- **Non-empty status**—the value must be one of the protocol-defined failure classes (§3.8).
 
 Business state travels in `payload`, never in `status`. This distinction keeps the protocol's failure semantics finite and analyzable: because `status` has finitely many values, the protocol can define a complete transition system over them.
 
-`meta` is the negotiable control plane. It is not business content. It is the plane on which conventions exchange control — callbacks, sessions, signatures, negotiation proposals, namespace membership. It is not a second message type; all communication is still a single `Envelop`.
+`meta` is the negotiable control plane. It is not business content. It is the plane on which conventions exchange control—callbacks, sessions, signatures, negotiation proposals, namespace membership. It is not a second message type; all communication is still a single `Envelop`.
 
 There is no `intent` field. An implementation that needs to dispatch within a plugin may carry a dispatch label in `meta`; the protocol does not name such a label, because naming it would introduce a second routing dimension and violate the one-shape principle.
 
@@ -171,7 +176,7 @@ The protocol requires that `route`:
 
 The realization of the lookup space is an implementation choice. The requirement that plugins are found by `receiver` in a shared namespace is protocol-level: without it, `MISSING` failures would be unanalyzable, and two independently generated plugins could not call each other.
 
-Routing modes — synchronous, asynchronous with callback, callback acknowledgement — are distinguished by `meta` (§3.10). They are not protocol primitives; they are conventions expressed in Tier 2.
+Routing modes—synchronous, asynchronous with callback, callback acknowledgement—are distinguished by `meta` (§3.10). They are not protocol primitives; they are conventions expressed in Tier 2.
 
 ### 3.4 Plugins
 
@@ -179,26 +184,26 @@ A plugin is a Python (or TypeScript) function:
 
 ```python
 async def execute(envelop, agent):
-    # status remains "" — no protocol-level error
+    # status remains "" -- no protocol-level error
     envelop.payload = {"ok": True, "data": {...}}
     return envelop
 ```
 
-There is no class, no instance, no lifecycle. A plugin “exists” iff it is found in the plugin lookup space.
+There is no class, no instance, no lifecycle. A plugin “exists” if and only if it is found in the plugin lookup space.
 
 A plugin may return an `Envelop` with:
 
-- `status` empty — success
-- `EXCEPTION` — it raised
-- `META_FAILED` — it refuses or signals a meta disagreement
+- Empty `status`—success
+- `EXCEPTION`—it raised
+- `META_FAILED`—it refuses or signals a `meta` disagreement
 
-It may not return `MISSING`, `TIMEOUT`, or `INVALID` — those are produced by `route`, not by plugins.
+It may not return `MISSING`, `TIMEOUT`, or `INVALID`—those are produced by `route`, not by plugins.
 
 ### 3.5 State
 
 The protocol requires that state is append-only and that there is no separate mutable state store. This follows from the absence of shared mutable state: plugins cannot communicate through side effects on a shared store; they communicate only through messages.
 
-How this is realized is an implementation choice. The reference implementation uses an `InformationFlow` — an append-only list of entries, persisted as JSON, with per-entry retention hints. Another implementation may use a log, a table, a snapshot, or any other append-only structure.
+How this is realized is an implementation choice. The reference implementation uses an Information-Flow—an append-only list of entries, persisted as JSON, with per-entry retention hints. Another implementation may use a log, a table, a snapshot, or any other append-only structure.
 
 The protocol sees only the constraint, not the realization.
 
@@ -218,16 +223,18 @@ We argue this absence is not a simplification but a dissolution: the concept of 
 
 ### 3.8 Failure Semantics
 
+AICP distinguishes structural failure from semantic failure.
+
 #### Structural Failure
 
 Structural failure is produced by the protocol. It has exactly four classes:
 
 | Class | Produced by | Trigger | Transition |
 |---|---|---|---|
-| `MISSING` | `route` | Receiver has no plugin | → `PENDING` (retry on next routing attempt; each attempt consumes `ttl`) |
-| `TIMEOUT` | `route` | A routing attempt fails to produce a result within its time bound, whether the plugin returned late or was forced to return by the implementation | → `RETRY` (retry on next routing attempt; each attempt consumes `ttl`) |
+| `MISSING` | `route` | Receiver has no plugin | → `PENDING` (retry; consumes `ttl`) |
+| `TIMEOUT` | `route` | A routing attempt fails to produce a result within its time bound | → `RETRY` (retry; consumes `ttl`) |
 | `EXCEPTION` | Plugin | Plugin raises | → `ISOLATED` (no further attempts) |
-| `INVALID` | `route` | `Envelop` violates constraints: missing `receiver`, `ttl ≤ 0`, `payload` not a dict, `meta` not a dict, or unrecognized `status` | → `DROPPED` (no further attempts) |
+| `INVALID` | `route` | `Envelop` violates constraints | → `DROPPED` (no further attempts) |
 
 These classes are protocol-level because the protocol itself produces them.
 
@@ -239,24 +246,22 @@ Therefore, even a message in `PENDING` consumes `ttl` on every retry, and when `
 
 #### Semantic Failure
 
-Semantic failure is produced by conventions — specifically, by disagreement over the contents of `meta`. The protocol does not know what `meta` contains, so it cannot classify these failures directly. Instead, the protocol defines a single state:
+Semantic failure is produced by conventions—specifically, by disagreement over the contents of `meta`. The protocol does not know what `meta` contains, so it cannot classify these failures directly. Instead, the protocol defines a single state:
 
-**`META_FAILED`** — a handler has signaled that the meta contract could not be satisfied, or has refused the `Envelop`.
+- `META_FAILED`—a handler has signaled that the `meta` contract could not be satisfied, or has refused the `Envelop`.
 
 When a message enters `META_FAILED`, the protocol guarantees two things:
 
-- The message's `ttl` continues to decrement on every routing attempt.
-- The framework, not the handler, enforces termination. If the handler does not move the message to `RECOVERED` or `ISOLATED` before `ttl` reaches zero, `route` forces the message to `DORMANT`.
+1. The message's `ttl` continues to decrement on every routing attempt.
+2. The framework, not the handler, enforces termination. If the handler does not move the message to `RECOVERED` or `ISOLATED` before `ttl` reaches zero, `route` forces the message to `DORMANT`.
 
 The handler may choose the content of recovery. But the handler cannot prevent the `ttl` from decrementing, and cannot prevent the framework from enforcing the terminal transition when `ttl` is exhausted.
 
 The framework guarantees termination, not success. If negotiation succeeds before `ttl` is exhausted, the message reaches `RECOVERED`. If it does not, the message reaches `DORMANT`. Both are defined outcomes. The protocol does not promise that `META_FAILED` leads to agreement; it promises that it leads to a terminal state.
 
-`RECOVERED` is a non-terminal state indicating that the meta disagreement has been resolved. When it is reached, `status` is cleared to empty, and the message continues on the normal path.
+`RECOVERED` is a non-terminal state indicating that the `meta` disagreement has been resolved. When it is reached, `status` is cleared to empty, and the message continues on the normal path.
 
-#### Refusal
-
-A handler may refuse an `Envelop` by returning `status = META_FAILED`. Refusal is not an error; it is a legitimate protocol action. It signals that the handler does not accept the current meta convention.
+**Refusal.** A handler may refuse an `Envelop` by returning `status = META_FAILED`. Refusal is not an error; it is a legitimate protocol action. It signals that the handler does not accept the current `meta` convention.
 
 The protocol defines the states of failure. The implementation defines the content of recovery. The framework enforces termination regardless of the content.
 
@@ -266,9 +271,9 @@ Three boundaries complete the failure semantics.
 
 #### Failed Messages Stay with Their Caller
 
-The protocol does not move a failed message to a different receiver. `route` is a synchronous function: when it sets a status, it returns the `Envelop` to its caller. The caller holds it, and decides what to do next — retry, generate a handler, or let it reach a terminal state.
+The protocol does not move a failed message to a different receiver. `route` is a synchronous function: when it sets a status, it returns the `Envelop` to its caller. The caller holds it and decides what to do next—retry, generate a handler, or let it reach a terminal state.
 
-This is deliberate. A protocol that moved failed messages elsewhere would need to know where — and that knowledge would be a convention the protocol cannot own. By keeping the failed message with the caller, the protocol stays silent about routing policy while still guaranteeing that the message is somewhere defined.
+This is deliberate. A protocol that moved failed messages elsewhere would need to know where—and that knowledge would be a convention the protocol cannot own. By keeping the failed message with the caller, the protocol stays silent about routing policy while still guaranteeing that the message is somewhere defined.
 
 `sender` and `receiver` are not swapped on failure. They retain the values they had when `route` was invoked. The only exception is the asynchronous callback case, which is a Tier 2 convention: when a handler completes asynchronously, it constructs a callback `Envelop` whose `sender` is the original `receiver` and whose `receiver` is the callback address. That construction is the implementation's choice, not a protocol rule.
 
@@ -276,11 +281,11 @@ In short: the protocol guarantees that a failed message is returned to its calle
 
 #### Convergence for Messages, Not Computations
 
-The protocol assumes that a plugin eventually returns. A plugin that never returns — an infinite loop, a blocked call, a hung process — is not something the protocol itself can handle, because `route` never regains control and `ttl` cannot be decremented.
+The protocol assumes that a plugin eventually returns. A plugin that never returns—an infinite loop, a blocked call, a hung process—is not something the protocol itself can handle, because `route` never regains control and `ttl` cannot be decremented.
 
 This is the boundary of the protocol's layer. The protocol is a message layer. It guarantees termination for every message it can see. A plugin that does not return is, at the message layer, invisible.
 
-The framework must have the ability to force a return from a stuck plugin — this is Tier 1, because without it `ttl` cannot decrement and termination fails. How the return is forced — thread interruption, process isolation, a watchdog — is Tier 3.
+The framework must have the ability to force a return from a stuck plugin—this is Tier 1, because without it `ttl` cannot decrement and termination fails. How the return is forced—thread interruption, process isolation, a watchdog—is Tier 3.
 
 When the forced return occurs, `route` regains control and sets `status = TIMEOUT`. From that point, the protocol's failure semantics apply normally.
 
@@ -294,37 +299,56 @@ The protocol assumes that plugins report their status honestly. A plugin that li
 
 ### 3.10 The Three-Tier Control Plane
 
-AICP distinguishes three tiers of control:
+AICP distinguishes three tiers of control.
 
-- **Tier 1 — Protocol-level control.** Controls that the protocol produces, that must be analyzable on failure, and whose specific form the protocol must know in order to define transitions. These are `Envelop` fields: `ttl`, `status`.
-- **Tier 2 — Negotiable control.** Controls that must be shared across generators to coordinate, but whose specific form the protocol need not know. These live in `meta`. Examples: `trace_id`, `message_id`, `callback_receiver`, `session_id`, `signature`, negotiation proposals, namespace membership protocols, and any dispatch label an implementation chooses.
-- **Tier 3 — Implementation control.** Controls that are neither produced by the protocol nor needed across generators. These are the implementation's own.
+#### Tier 1—Protocol-Level Control
+
+Controls that the protocol produces, that must be analyzable on failure, and whose specific form the protocol must know in order to define transitions. These are `Envelop` fields: `ttl` and `status`.
+
+#### Tier 2—Negotiable Control
+
+Controls that must be shared across generators to coordinate, but whose specific form the protocol need not know. These live in `meta`.
+
+Examples include:
+
+- `trace_id`
+- `message_id`
+- `callback_receiver`
+- `session_id`
+- `signature`
+- Negotiation proposals
+- Namespace membership protocols
+- Any dispatch label an implementation chooses
+
+#### Tier 3—Implementation Control
+
+Controls that are neither produced by the protocol nor needed across generators. These are the implementation's own.
 
 The boundary between tiers is determined in two stages. The two-stage structure avoids circularity: the criteria operate at different stages and do not presuppose each other.
 
-#### Stage 1 — Filter
+#### Stage 1—Filter
 
 A control is a candidate for protocol-level treatment if both of the following hold:
 
-- **Analyzable on failure.** If the control is undefined, failure becomes unanalyzable.
-- **Shared across generators.** It must be shared across independently generated handlers.
+1. **Analyzable on failure.** If the control is undefined, failure becomes unanalyzable.
+2. **Shared across generators.** It must be shared across independently generated handlers.
 
 Controls that fail Stage 1 are Tier 3.
 
-#### Stage 2 — Classify
+#### Stage 2—Classify
 
 Among the candidates:
 
-- A control is Tier 1 if the protocol must know its specific form in order to define transitions.
-- It is Tier 2 if the protocol needs only to know that the control exists as an exchangeable value.
+- A control is **Tier 1** if the protocol must know its specific form in order to define transitions.
+- A control is **Tier 2** if the protocol needs only to know that the control exists as an exchangeable value.
 
 We note that “analyzable on failure” is a design criterion, not a mechanical test. In cases of doubt, the protocol errs toward Tier 2, because Tier 2 is where coordination conventions live, and coordination is what the protocol makes expressible rather than mandatory.
 
 Applying the stages:
 
-- `ttl`, `status` — Tier 1.
-- `trace_id`, `message_id`, `callback_receiver`, `session_id`, `signature`, negotiation proposals, namespace membership protocols — Tier 2.
-- Implementation conventions, sandbox rules, state stores, lookup-space realizations, execution timeouts, retry schedules — Tier 3.
+- `ttl`, `status`—Tier 1.
+- `trace_id`, `message_id`, `callback_receiver`, `session_id`, `signature`, negotiation proposals, namespace membership protocols—Tier 2.
+- Implementation conventions, sandbox rules, state stores, lookup-space realizations, execution timeouts, retry schedules—Tier 3.
 
 Control that the protocol must know in form is reified as `Envelop` fields. Control that must be shared but need not be known in form is reified as `meta` exchange. Control that need not be shared at all is not reified.
 
@@ -333,20 +357,20 @@ Control that the protocol must know in form is reified as `Envelop` fields. Cont
 The following are implementation choices, not AICP:
 
 - How an LLM scheduler prompts, parses, or validates LLM output.
-- How large text is delimited, such as `@@CONTENT@@`.
-- How reasoning length is bounded, such as think length.
-- How a sandbox is enforced, such as replacing builtins.
-- How sub-agents are managed, such as `task_manager`.
-- How plugin contracts are discovered, such as `contract_agent`.
+- How large text is delimited (e.g., `@@CONTENT@@`).
+- How reasoning length is bounded (e.g., think length).
+- How a sandbox is enforced (e.g., replacing builtins).
+- How sub-agents are managed (e.g., `task_manager`).
+- How plugin contracts are discovered (e.g., `contract_agent`).
 - What capabilities the `agent` object exposes.
-- How state is stored, such as `_flow`, a log, a table, or a snapshot.
-- How the plugin lookup space is realized, such as a dictionary, a filesystem, a database, or a name service.
+- How state is stored (e.g., `_flow`, a log, a table, a snapshot).
+- How the plugin lookup space is realized (e.g., a dictionary, a filesystem, a database, a name service).
 - How the shared namespace is maintained across processes or hosts.
 - How a forced return from a stuck plugin is implemented.
 - How retries are scheduled.
 - The unit of `ttl`.
 - What additional fields an `Envelop` carries.
-- Any dispatch label within a plugin, such as `intent`.
+- Any dispatch label within a plugin (e.g., `intent`).
 
 These are all Tier 3.
 
@@ -356,11 +380,11 @@ These are all Tier 3.
 
 A protocol is only a protocol if it is enforced. AICP requires an implementation to enforce exactly five rules:
 
-- **`Envelop` structure.** Every `Envelop` must carry `sender`, `receiver`, `ttl`, `status`, and `meta`.
-- **Plugin shape.** Only `async def execute(envelop, agent)` is accepted as a plugin.
-- **Plugin lookup.** Every plugin is reachable by `receiver` in a shared namespace.
-- **Append-only state.** State must be append-only; no separate mutable state store may exist.
-- **Failure termination.** Every plugin must return an `Envelop` whose status is empty, `EXCEPTION`, or `META_FAILED`. Any other status triggers `INVALID`. The framework must enforce terminal transitions when `ttl` is exhausted. The framework must have the ability to force a return from a stuck plugin, producing `TIMEOUT`.
+1. **`Envelop` structure.** Every `Envelop` must carry `sender`, `receiver`, `ttl`, `status`, and `meta`.
+2. **Plugin shape.** Only `async def execute(envelop, agent)` is accepted as a plugin.
+3. **Plugin lookup.** Every plugin is reachable by `receiver` in a shared namespace.
+4. **Append-only state.** State must be append-only; no separate mutable state store may exist.
+5. **Failure termination.** Every plugin must return an `Envelop` whose status is empty, `EXCEPTION`, or `META_FAILED`. Any other status triggers `INVALID`. The framework must enforce terminal transitions when `ttl` is exhausted. The framework must have the ability to force a return from a stuck plugin, producing `TIMEOUT`.
 
 These are the only rules the protocol itself imposes. They are Tier 1.
 
@@ -378,7 +402,7 @@ Each protocol rule is enforced mechanically:
 
 ### 4.3 What the Protocol Does Not Enforce
 
-An implementation may enforce additional rules — sandbox restrictions, output format requirements, generation constraints — but these are not protocol rules. A different AICP implementation may enforce entirely different rules and remain AICP-compatible, provided it enforces the five Tier 1 rules of §4.1.
+An implementation may enforce additional rules—sandbox restrictions, output format requirements, generation constraints—but these are not protocol rules. A different AICP implementation may enforce entirely different rules and remain AICP-compatible, provided it enforces the five Tier 1 rules of §4.1.
 
 This is what makes AICP minimal.
 
@@ -390,7 +414,7 @@ AICP requires the LLM to internalize one concept: message passing. An `Envelop` 
 
 ### 5.2 What Counts as an Operation
 
-We define an operation as an external caller — the LLM, or a plugin — sending an `Envelop` to a receiver and receiving an `Envelop` in return.
+We define an operation as an external caller—the LLM, or a plugin—sending an `Envelop` to a receiver and receiving an `Envelop` in return.
 
 Under this definition:
 
@@ -406,27 +430,27 @@ Calling, creating, and re-calling are not three operations in form. They are the
 
 - **Calling.** Send an `Envelop` to an existing plugin.
 - **Creating.** Send an `Envelop` to a plugin that generates plugins. Creating is itself a call.
-- **Re-calling.** The newly created plugin receives an `Envelop`, and is indistinguishable in form from any other plugin.
+- **Re-calling.** The newly created plugin receives an `Envelop` and is indistinguishable in form from any other plugin.
 
-All three go through the same shape: an `Envelop` through `route` into `execute`, receiving `(envelop, agent)`, returning an `Envelop`.
+All three go through the same shape: an `Envelop` through `route` into `execute`, receiving `(envelop, agent)`, and returning an `Envelop`.
 
-We call this form self-similarity. The form is identical at every layer.
+We call this form **self-similarity**. The form is identical at every layer.
 
 The effects are not identical. A normal call returns an `Envelop`; a call to a generator plugin also returns an `Envelop`, but as a side effect it registers a new plugin in the lookup space. The differing effect is carried in the returned `Envelop`: the generator's `Envelop` carries the receiver of the newly created plugin. The caller reads it and continues with the same shape.
 
 So the LLM does not need to learn that creation has a different shape. Creation has the same shape; only the returned content differs.
 
-We distinguish this from effect self-similarity, which AICP does not claim. Effects are not identical; only forms are. The weaker claim is the one that matters for cognitive load, because the LLM learns the form, and the form is what it must reproduce.
+We distinguish this from **effect self-similarity**, which AICP does not claim. Effects are not identical; only forms are. The weaker claim is the one that matters for cognitive load, because the LLM learns the form, and the form is what it must reproduce.
 
-The assertion that all operations reduce to `route` entering `execute` is a claim about the protocol's surface, not a theorem about its semantics. It can be read as a hypothesis: if a fourth operation were proposed that did not fit this form, the protocol would need to be revised. We regard this as the correct posture for a protocol. A formal statement — an operational semantics plus a reduction lemma — is left as future work (§10.8).
+The assertion that all operations reduce to `route` entering `execute` is a claim about the protocol's surface, not a theorem about its semantics. It can be read as a hypothesis: if a fourth operation were proposed that did not fit this form, the protocol would need to be revised. We regard this as the correct posture for a protocol. A formal statement—an operational semantics plus a reduction lemma—is left as future work (§10.8).
 
 ### 5.4 Opacity of Implementation
 
 The internal implementation of a plugin is opaque to the LLM. The LLM needs to know only:
 
-- The plugin's receiver.
-- What `Envelop` to send.
-- What `Envelop` to expect back.
+- The plugin's `receiver`
+- What `Envelop` to send
+- What `Envelop` to expect back
 
 What the plugin does internally is the plugin's own affair. This is what “the concrete implementation lives in the plugin” means: the protocol governs how messages flow, not what plugins do inside.
 
@@ -438,15 +462,15 @@ The reduction is not merely quantitative. In a layered framework, the meta-level
 
 ### 5.6 A Clarification
 
-“One concept” refers to the form of the action, not to the totality of knowledge. The LLM still discovers what each plugin does at runtime — by reading its contract, or its source. It does not need to learn how to call. The concept is constant; the content is discovered.
+“One concept” refers to the form of the action, not to the totality of knowledge. The LLM still discovers what each plugin does at runtime. It does not need to learn how to call. The concept is constant; the content is discovered.
 
 ### 5.7 Design Observations
 
 The following are design observations, not formal measurements.
 
 - **One-shot correctness.** In practice, plugins generated against AICP are accepted on first attempt more often than against layered frameworks.
-- **Minimal context.** Generating a plugin requires the protocol description—approximately a few hundred tokens—not framework documentation.
-- **Cross-language replication.** Two independent implementations, Python and TypeScript, were produced by feeding the protocol and the reference implementation to an LLM; both are structurally identical to the original.
+- **Minimal context.** Generating a plugin requires the protocol description (a few hundred tokens), not framework documentation.
+- **Cross-language replication.** Two independent implementations (Python and TypeScript) were produced by feeding the protocol and the reference implementation to an LLM; both are structurally identical to the original.
 
 ## 6. Self-Bootstrapping
 
@@ -474,7 +498,7 @@ How the required metadata is packaged is an implementation choice. It is Tier 3.
 
 ### 6.4 Failure Recovery Without Failure Machinery
 
-Failure recovery follows the same pattern. The protocol defines failure states (§3.8); it does not define failure handlers. A handler for `MISSING` is a plugin that generates the missing plugin. A handler for `META_FAILED` is a plugin that negotiates the meta disagreement. Neither is special; both are generated when needed.
+Failure recovery follows the same pattern. The protocol defines failure states (§3.8); it does not define failure handlers. A handler for `MISSING` is a plugin that generates the missing plugin. A handler for `META_FAILED` is a plugin that negotiates the `meta` disagreement. Neither is special; both are generated when needed.
 
 The framework guarantees termination; the implementation decides what the recovery contains.
 
@@ -493,11 +517,13 @@ AICP reduces six paradigms to a single meta-model:
 | Plugin architecture | Plugins found by `receiver` in a shared namespace |
 | Dependency injection | Capabilities injected, not imported |
 
-The meta-model is: **messages flow; plugins react; state accumulates.**
+The meta-model is:
+
+> Messages flow; plugins react; state accumulates.
 
 ### 7.2 The Boundary of the Meta-Model
 
-No paradigm-specific machinery is retained. What remains is the intersection of the paradigms — the smallest structure that expresses all of them.
+No paradigm-specific machinery is retained. What remains is the intersection of the paradigms—the smallest structure that expresses all of them.
 
 The protocol's core is exactly this intersection. Everything beyond it is implementation.
 
@@ -520,28 +546,22 @@ We do not claim these systems are production-grade. We claim the protocol is suf
 
 Note that in each domain, the generated system includes its own implementation conventions, its own state store, and its own lookup-space realization. These differ across domains. The protocol is what they share.
 
-A concrete interoperability example. Consider two independently generated agents:
+#### A Concrete Interoperability Example
 
-- **A**, which generates a compute plugin.
-- **B**, which generates a storage plugin.
+Consider two independently generated agents:
+
+- **A**, which generates a compute plugin
+- **B**, which generates a storage plugin
 
 They have never negotiated.
 
-#### Discovery
+**Discovery.** A must find B's storage plugin by name. The protocol requires that both A and B have access to a shared namespace—a lookup space in which a plugin registered by B is visible to A by its `receiver`. The protocol does not prescribe how this namespace is realized. What it requires is that the namespace is queryable by both.
 
-A must find B's storage plugin by name. The protocol requires that both A and B have access to a shared namespace — a lookup space in which a plugin registered by B is visible to A by its receiver. The protocol does not prescribe how this namespace is realized. What it requires is that the namespace is queryable by both.
+**Invocation.** A sends an `Envelop` whose `receiver` is B's storage plugin name. `route` queries the shared namespace, finds the plugin, and invokes it with `(envelop, agent)`.
 
-#### Invocation
+**Disagreement.** If A and B disagree on `meta`, the message enters `META_FAILED`. Each generates a negotiation plugin. The framework enforces termination: every routing attempt consumes `ttl`, and when `ttl` reaches zero the message enters `DORMANT` regardless of whether negotiation succeeded.
 
-A sends an `Envelop` whose `receiver` is B's storage plugin name. `route` queries the shared namespace, finds the plugin, and invokes it with `(envelop, agent)`.
-
-#### Disagreement
-
-If A and B disagree on `meta`, the message enters `META_FAILED`. Each generates a negotiation plugin. The framework enforces termination: every routing attempt consumes `ttl`, and when `ttl` reaches zero the message enters `DORMANT` regardless of whether negotiation succeeded.
-
-#### What This Shows
-
-Two agents that share the core can interoperate provided they also agree on how to join a common namespace. Sharing the core is necessary but not sufficient. The agreement is a Tier 2 convention. Two agents that share the core but not a membership protocol will see each other's plugins as `MISSING` — a defined, analyzable outcome, not a silent failure.
+**What this shows.** Two agents that share the core can interoperate provided they also agree on how to join a common namespace. Sharing the core is necessary but not sufficient. The agreement is a Tier 2 convention. Two agents that share the core but not a membership protocol will see each other's plugins as `MISSING`—a defined, analyzable outcome, not a silent failure.
 
 The realization of the namespace remains Tier 3.
 
@@ -571,9 +591,9 @@ AICP's core is stable: the `Envelop` structure, `route`, the plugin signature, t
 
 Tier 2 (the contents of `meta`) and Tier 3 (implementation) may evolve freely. Two AICP implementations need only share the core to speak the same protocol.
 
-To interoperate, two implementations must additionally agree on the Tier 2 conventions the interaction requires — most importantly, the membership protocol by which they join a common namespace. This agreement may be pre-arranged, negotiated at runtime, or established by a third party. The protocol does not prescribe which.
+To interoperate, two implementations must additionally agree on the Tier 2 conventions the interaction requires—most importantly, the membership protocol by which they join a common namespace. This agreement may be pre-arranged, negotiated at runtime, or established by a third party. The protocol does not prescribe which.
 
-The precise sense in which “sharing the core” enables interoperability is this: it makes interoperability expressible. It gives two implementations a common vocabulary in which to state their Tier 2 agreements. It does not make interoperability attainable by itself — that requires the agreements to actually be reached, and reaching them is outside the protocol.
+The precise sense in which “sharing the core” enables interoperability is this: it makes interoperability expressible. It gives two implementations a common vocabulary in which to state their Tier 2 agreements. It does not make interoperability attainable by itself—that requires the agreements to actually be reached, and reaching them is outside the protocol.
 
 The distinction matters because it locates responsibility correctly: the protocol guarantees the vocabulary, not the conversation.
 
@@ -597,10 +617,10 @@ AICP's minimalism is a precondition for LLM-nativeness. The protocol is simple e
 
 A recurring question is why certain constraints are protocol-level while superficially similar ones are not. The answer is the same in each case: the protocol must enforce the property it needs, and must leave the realization of that property to the implementation.
 
-- **Failure semantics.** Structural failure is produced by the protocol, not by a convention. A missing plugin, an expired `ttl`, a malformed `Envelop` — these are produced by the protocol itself. The protocol therefore knows their types and can define their transitions.
+- **Failure semantics.** Structural failure is produced by the protocol, not by a convention. A missing plugin, an expired `ttl`, a malformed `Envelop`—these are produced by the protocol itself. The protocol therefore knows their types and can define their transitions.
 - **Control.** The two-stage criterion (§3.10) separates control the protocol must know in form from control it must only make exchangeable. Reifying all control would make AICP a framework.
-- **State.** “Append-only” is a property the protocol needs in order to guarantee the absence of shared mutable state. The store — `_flow`, a log, a table — is a realization. A clarification: AICP has a shared append-only record; what it excludes is a shared mutable store.
-- **Lookup space.** That two independently generated plugins can find each other by name is required for analyzability (`MISSING` failures depend on it) and for coordination. The realization — dictionary, filesystem, database — is not.
+- **State.** “Append-only” is a property the protocol needs in order to guarantee the absence of shared mutable state. The store—`_flow`, a log, a table—is a realization. A clarification: AICP has a shared append-only record; what it excludes is a shared mutable store.
+- **Lookup space.** That two independently generated plugins can find each other by name is required for analyzability (`MISSING` failures depend on it) and for coordination. The realization—dictionary, filesystem, database—is not.
 
 ### 10.5 Protocol vs. Implementation
 
@@ -620,17 +640,58 @@ AICP's guarantees are precise, and so are its boundaries.
 
 These boundaries are not gaps. They are the consequences of the protocol being a message layer: it speaks about messages, and it is silent about everything that is not a message.
 
-### 10.7 Relation to Existing Formal Work
+### 10.7 The Exchange
 
-The termination claims of §3.8 are stated in the style of a protocol specification, not proved in the style of a semantics. They can be read as design arguments: the transition system is finite, each transition consumes `ttl`, and `ttl` is bounded, so every message reaches a terminal state. A formal proof would proceed by induction over routing attempts, and would need to make explicit the framework's obligations: that retries occur, that `ttl` decrements on each attempt, and that a stuck plugin can be forced to return. We regard this as future work, and we regard the current argument as sufficient for a design paper but insufficient for a formal-methods venue.
+AICP makes a specific exchange, and it is worth stating plainly.
 
-### 10.8 Open Problems
+#### What AICP Gives Up: Provability
 
-- **A formal operational semantics.** A labeled transition system over `Envelop` states — in the style of Agha (1986) or Milner (1999) — would let us prove that every message reaches a terminal state, and characterize the framework's obligations.
+AICP does not prove that negotiation produces a valid agreement, that plugins report their status honestly, or that computations terminate. These are properties a closed system can prove. AICP is not a closed system.
+
+#### What AICP Gains: Cross-Language Identity and Cross-Node Transparency
+
+A plugin written in one language is understood in another. A plugin registered on one node is callable from another. Neither requires an adaptation layer, because the protocol does not distinguish languages or nodes—the core is five things, and those five things are the same shape in every realization.
+
+#### Why the Exchange Is Forced, Not Chosen
+
+Provability requires closure: to prove a property of a system, you must own the system's boundary, its participants, and its resources. Cross-language and cross-node reach require openness: to reach across a language or a node, you must not assume a shared boundary. These two requirements are in logical opposition. A system cannot have both.
+
+This is not a design preference; it is a structural fact. A closed system can prove its properties, but it cannot reach outside its boundary without an adaptation layer. An open system can reach across boundaries, but it cannot prove properties it does not own. CyberOrgs chose closure and gained provability—its operational semantics and termination properties are the reward. AICP chooses openness and gains cross-language and cross-node reach—its structural identity across languages and its transparency across nodes are the reward.
+
+#### Why, in the LLM Era, the Choice Is Not Free
+
+Provability has become unavailable, because plugins are generated at runtime by a generator that is not fully trusted. No protocol can prove the validity of an outcome when the participants are generated on the fly. Cross-language and cross-node reach have become necessary, because agents are generated independently, on different nodes, and in different languages.
+
+AICP does not choose openness because it is better. It chooses openness because it is the only remaining option—and it finds, in that option, two capabilities that closed systems cannot have.
+
+#### What Is Preserved in the Exchange
+
+AICP does not give up all guarantee. It gives up provability of outcomes and retains analyzability of process. Every message reaches a terminal state. Every failure is classified and analyzable. Every coordination is expressible through a shared vocabulary. Every exchange leaves a defined trace, even when it fails. This is weaker than validity; it is stronger than silence.
+
+The exchange is:
+
+> From proving outcomes, to enabling reach.
+
+### 10.8 Relation to Existing Formal Work
+
+The termination claims of §3.8 are stated in the style of a protocol specification, not proved in the style of a semantics. They can be read as design arguments: the transition system is finite, each transition consumes `ttl`, and `ttl` is bounded, so every message reaches a terminal state.
+
+A formal proof would proceed by induction over routing attempts and would need to make explicit the framework's obligations:
+
+- Retries occur.
+- `ttl` decrements on each attempt.
+- A stuck plugin can be forced to return.
+
+We regard this as future work, and we regard the current argument as sufficient for a design paper and insufficient for a formal-methods venue.
+
+### 10.9 Open Problems
+
+- **A formal operational semantics.** A labeled transition system over `Envelop` states—in the style of Agha (1986) or Milner (1999)—would let us prove that every message reaches a terminal state and characterize the framework's obligations.
 - **A reduction lemma for form self-similarity.** §5.3 asserts that all operations reduce to `route` entering `execute`. This can be made precise: define an operational semantics, define what counts as an “operation” (we give a first definition in §5.2), and prove that every operation is an instance of the shape.
 - **A granularity criterion for Stage 1.** §3.10's “analyzable on failure” is a design criterion, not a mechanical test. A precise characterization would make the Tier 1/2 boundary algorithmic.
 - **Multi-agent discovery and membership.** §8 and §9.5 locate namespace membership in Tier 2. What is not settled is whether a canonical membership protocol could be specified without violating minimality, and whether two agents can negotiate membership through the same `META_FAILED` mechanism.
-- **Adversarial plugins.** §3.9 states two boundaries — plugins that do not return, and plugins that lie. A fuller treatment would characterize the class of adversarial behaviors a message layer can and cannot bound.
+- **The validity of runtime-generated negotiation.** When both parties to a negotiation are generated at runtime, by a generator that is not fully trusted, what does it mean for a negotiation to be valid? The protocol guarantees termination. It does not guarantee validity. This is the deepest open problem, and it is where the LLM era departs most sharply from prior work.
+- **Adversarial plugins.** §3.9 states two boundaries—plugins that do not return and plugins that lie. A fuller treatment would characterize the class of adversarial behaviors a message layer can and cannot bound.
 - **Empirical evaluation.** §5.7 reports design observations, not measurements. A controlled study would convert them into evidence.
 
 ## 11. Conclusion
@@ -639,11 +700,13 @@ We have presented AICP, a protocol that reduces six canonical paradigms of distr
 
 The protocol is defined by its core: the `Envelop` type, the `route` function, the plugin signature, the plugin lookup space, and the append-only state constraint. It has no agent instances, no context bus, no registry, and no scheduler. It supports cross-language replication, one-shot LLM code generation, self-inspection, self-bootstrapping, and cross-domain generation.
 
-We have argued that AICP lowers LLM cognitive load by requiring the LLM to internalize one concept — message passing — which covers calling, creating, and re-calling alike, because the mechanism is self-similar in form across layers, with differing effects carried in the returned `Envelop`.
+We have argued that AICP lowers LLM cognitive load by requiring the LLM to internalize one concept—message passing—which covers calling, creating, and re-calling alike, because the mechanism is self-similar in form across layers, with differing effects carried in the returned `Envelop`.
 
 We have introduced a failure semantics in which termination is enforced by the framework, not entrusted to handlers, and a three-tier control plane whose boundary is drawn by a two-stage criterion.
 
-We have stated the protocol's boundaries explicitly: termination not success; convergence for messages not computations; silence about routing policy for failed messages; interoperability enabled but not guaranteed; and honesty of status reporting assumed. These boundaries are as deliberate as the guarantees.
+We have stated the protocol's boundaries explicitly: termination, not success; convergence for messages, not computations; silence about routing policy for failed messages; interoperability enabled but not guaranteed; and honesty of status reporting assumed. These boundaries are as deliberate as the guarantees.
+
+We have stated the protocol's exchange explicitly: AICP gives up provability and gains cross-language identity and cross-node transparency. This exchange is forced by a logical opposition between closure and reach—a closed system can prove its properties but cannot cross boundaries without an adaptation layer; an open system can cross boundaries but cannot prove properties it does not own. In the LLM era, provability has become unavailable and cross-language, cross-node reach has become necessary. The exchange is not a preference; it is a consequence.
 
 The protocol is minimal not because it ignores failure, control, or state, but because it distinguishes what it must know from what it must only make expressible.
 
@@ -663,9 +726,7 @@ class Envelop:
         self.ttl = ttl              # Tier 3: default value and unit
         self.status = ""            # Tier 1: empty = no protocol-level error
 
-
 plugins = {}                        # Tier 3: lookup space realization
-
 
 async def route(envelop, agent):
     # Tier 1: every routing attempt consumes one ttl
@@ -697,46 +758,51 @@ async def route(envelop, agent):
 
     return result
 
-
 async def execute(envelop, agent):
-    # status remains "" — no protocol-level error
+    # status remains "" -- no protocol-level error
     envelop.payload = {"ok": True, "data": {...}}
     return envelop
 ```
 
 ## Appendix B: Protocol Constitution (Tier 1)
 
-- **`Envelop` structure.** `sender`, `receiver`, `ttl`, `status`, `meta`.
-- **Plugin shape.** `async def execute(envelop, agent)`.
-- **Plugin lookup.** Plugins are found by `receiver` in a shared namespace.
-- **Append-only state.** State is append-only; no separate mutable state store.
-- **Failure termination.** Returned status must be empty, `EXCEPTION`, or `META_FAILED`. Any other status triggers `INVALID`. The framework enforces terminal transitions when `ttl` is exhausted, and has the ability to force a return from a stuck plugin (producing `TIMEOUT`).
+1. **`Envelop` structure.** `sender`, `receiver`, `ttl`, `status`, `meta`.
+2. **Plugin shape.** `async def execute(envelop, agent)`.
+3. **Plugin lookup.** Plugins are found by `receiver` in a shared namespace.
+4. **Append-only state.** State is append-only; no separate mutable state store.
+5. **Failure termination.** Returned status must be empty, `EXCEPTION`, or `META_FAILED`. Any other status triggers `INVALID`. The framework enforces terminal transitions when `ttl` is exhausted and has the ability to force a return from a stuck plugin, producing `TIMEOUT`.
 
 ## Appendix C: The Three-Tier Control Plane
 
-| Tier | Stage 1: Filter | Stage 2: Classify | Examples | Reified as |
-|---|---|---|---|---|
-| 1 | Passes | Protocol must know form | `ttl`, `status` | `Envelop` fields |
-| 2 | Passes | Protocol needs only existence | `trace_id`, `message_id`, `callback_receiver`, `session_id`, `signature`, negotiation proposals, namespace membership protocols | `meta` exchange |
-| 3 | Fails | — | LLM scheduler conventions, sandbox rules, sub-agent tools, contract discovery, state stores, lookup-space realizations, forced-return mechanisms, retry schedules, `ttl` unit | Implementation only |
+### Tier 1
 
-## Appendix D: Status Values
+Produced by the protocol; the protocol must know its form. Examples: `ttl`, `status`. Reified as `Envelop` fields.
 
-### Non-Terminal
+### Tier 2
+
+Must be shared across generators; the protocol need not know its form. Examples: `trace_id`, `message_id`, `callback_receiver`, `session_id`, `signature`, negotiation proposals, namespace membership protocols. Reified as `meta` exchange.
+
+### Tier 3
+
+Neither produced by the protocol nor needed across generators. Examples: LLM scheduler conventions, sandbox rules, sub-agent tools, contract discovery, state stores, lookup-space realizations, forced-return mechanisms, retry schedules, the `ttl` unit. Not reified.
+
+## Appendix D: `status` Values
+
+### Non-Terminal States
 
 | Value | Produced by | Meaning | Next |
 |---|---|---|---|
 | `""` | Default | No protocol-level error | — |
-| `MISSING` | `route` | Receiver has no plugin | → `PENDING` (retry, consumes `ttl`) |
-| `TIMEOUT` | `route` | A routing attempt produced no result within its time bound | → `RETRY` (retry, consumes `ttl`) |
+| `MISSING` | `route` | Receiver has no plugin | → `PENDING` (retry; consumes `ttl`) |
+| `TIMEOUT` | `route` | A routing attempt produced no result within its time bound | → `RETRY` (retry; consumes `ttl`) |
 | `EXCEPTION` | Plugin | Plugin raised | → `ISOLATED` |
 | `INVALID` | `route` | `Envelop` violated constraints | → `DROPPED` |
-| `META_FAILED` | Plugin | Meta contract unsatisfiable, or refusal | → `RECOVERED` / `ISOLATED` / (framework forces) `DORMANT` |
+| `META_FAILED` | Plugin | `meta` contract unsatisfiable, or refusal | → `RECOVERED` / `ISOLATED` / (framework forces) `DORMANT` |
 | `PENDING` | `route` | Awaiting plugin generation | Retry (consumes `ttl`) |
 | `RETRY` | `route` | Awaiting retry | Retry (consumes `ttl`) |
-| `RECOVERED` | Handler | Meta disagreement resolved | → `""` |
+| `RECOVERED` | Handler | `meta` disagreement resolved | → `""` |
 
-### Terminal
+### Terminal States
 
 | Value | Produced by | Meaning |
 |---|---|---|
@@ -749,36 +815,36 @@ async def execute(envelop, agent):
 ## Appendix E: What Is Not Part of the Protocol
 
 - LLM prompt format, output parsing, validation.
-- Large-text delimiting, such as `@@CONTENT@@`.
-- Reasoning length bounding, such as think length.
-- Sandbox enforcement, such as replacing builtins.
-- Sub-agent management, such as `task_manager`.
-- Contract discovery, such as `contract_agent`.
+- Large-text delimiting (e.g., `@@CONTENT@@`).
+- Reasoning length bounding (e.g., think length).
+- Sandbox enforcement (e.g., replacing builtins).
+- Sub-agent management (e.g., `task_manager`).
+- Contract discovery (e.g., `contract_agent`).
 - Capability set of the `agent` object.
-- State storage, such as `_flow`, a log, a table, or a snapshot.
-- Lookup space realization, such as a dictionary, a filesystem, a database, or a name service.
+- State storage (e.g., `_flow`, a log, a table, a snapshot).
+- Lookup-space realization (e.g., a dictionary, a filesystem, a database, a name service).
 - Cross-process or cross-host namespace maintenance.
 - Forced-return mechanism for stuck plugins.
 - Retry scheduling.
 - The unit of `ttl`.
 - Additional `Envelop` fields.
-- Any dispatch label within a plugin, such as `intent`.
+- Any dispatch label within a plugin (e.g., `intent`).
 
 Any AICP implementation may choose differently.
 
 ## References
 
 - Agha, G. (1986). *Actors: A Model of Concurrent Computation in Distributed Systems*. MIT Press.
-- Agha, G. (1990). Concurrent Object-Oriented Programming. *Communications of the ACM*, 33(9), 125–141.
+- Agha, G. (1990). Concurrent Object-Oriented Programming. *Communications of the ACM, 33*(9), 125–141.
 - Armstrong, J. (2007). *Programming Erlang*. Pragmatic Bookshelf.
 - Fowler, M. (2005). *Event Sourcing*.
 - Hewitt, C. (1973). A Universal Modular Actor Formalism for Artificial Intelligence. *IJCAI*.
 - Jamali, N. (2004). *CyberOrgs: A Model for Resource Bounded Complex Agents*. PhD thesis, University of Illinois at Urbana-Champaign.
 - Liedtke, J. (1995). On µ-Kernel Construction. *SOSP*.
 - Milner, R. (1999). *Communicating and Mobile Systems: The π-Calculus*. Cambridge University Press.
-- MCP Specification (Anthropic).
-- AICP Protocol Specification v5.8.
-- AICP Reference Implementations (Python, TypeScript).
+- *MCP Specification* (Anthropic).
+- *AICP Protocol Specification v5.9*.
+- *AICP Reference Implementations* (Python, TypeScript).
 
 
 
