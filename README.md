@@ -1,9 +1,15 @@
-<p align="center">
-  <h1 align="center">AICP Protocol / AICP 协议</h1>
-  <strong>Agent Interaction & Communication Protocol .</strong>
-  <br>
-  <em>Agent 交互与通信协议。</em>
-</p>
+# AICP Protocol
+
+English | [中文](./README.zh-CN.md)
+
+> **The protocol is the soul. Code is the body.**
+>
+> Traditional frameworks: the LLM defines the node. The framework defines the orchestration.
+> AICP: the LLM defines everything — nodes, flow, the system itself.
+>
+> **With AICP, the LLM redefines system design itself.**
+
+**AICP (Agent Interaction & Communication Protocol)** is a minimal, fixed-core protocol for LLM-native agent systems. Its first-class goal is cognitive load reduction for the generator: an LLM generates in one pass, from a single context, so the protocol must fit in that context.
 
 <p align="center">
   <a href="https://github.com/woozheng/aicp-eat"><img src="https://img.shields.io/badge/Python-Reference_Implementation-blue?style=flat-square&logo=python" alt="Python Reference"></a>
@@ -13,127 +19,130 @@
 </p>
 
 ---
+
 ## What is AICP
 
-<p align="center">
-  <img src="docs/aicp_pro.png" alt="What is AICP " width="900">
-</p>
+AICP is not a framework. It is not a library. It is a protocol.
 
----
-## MCP vs ACIP 
+Its core is minimal and fixed. AICP is defined by five things, and only five:
 
-<p align="center">
-  <img src="docs/aicp_mcp.png" alt="MCP vs ACIP" width="900">
-</p>
+1. **`Envelop`** — the sole message type.
+2. **`route`** — the sole routing function.
+3. **`execute(envelop, agent)`** — the plugin signature.
+4. **The plugin lookup space** — plugins are found by `receiver` in a shared namespace.
+5. **Append-only state** — no separate mutable store.
 
----
-## AICP VS Traditional Agent Architecture
-
-<p align="center">
-  <img src="docs/aicp.png" alt="AICP vs Traditional Agent Architecture" width="900">
-</p>
+Everything else is implementation. No agent instances. No context bus. No registry. No scheduler.
 
 ---
 
-## AICP Intergration with Legacy Systems
+## Why AICP
 
-<p align="center">
-  <img src="docs/aicp_c1.png" alt="AICP Intergration with Legacy Systems" width="900">
-</p>
+### Traditional frameworks vs. AICP
 
+Traditional LLM frameworks put the LLM inside a node. The chain — which node runs when, what happens on failure, where the flow goes next — is designed by a human, expressed as a workflow or a DAG, and enforced by the framework. The LLM executes; it does not orchestrate.
 
+AICP removes that division. The LLM defines the nodes, the flow, and the system itself. Orchestration is not a framework artifact; it is the LLM's own output, expressed as messages.
+
+### One concept
+
+This is possible because calling, creating, and re-calling are the same operation in form — an Envelop through `route` into `execute`. The meta-level and the object-level share one shape, so a rule learned at one transfers to the other. The LLM learns one concept — message passing — and it can define everything.
+
+### The design language is messages
+
+In a traditional framework, "system design" is what the human does before the LLM runs. In AICP, system design is what the LLM produces as its output. It does not draw a workflow and then fill in nodes — it writes messages, and the messages are the system.
+
+This is what it means for the LLM to redefine system design: the design language is no longer a diagram or a configuration file. It is messages.
+
+### AICP vs. MCP
+
+MCP standardizes tool invocation. AICP standardizes tool creation, inspection, and repair. AICP is not a tool-calling protocol; it is a tool-creating protocol.
+
+---
+
+## Reference Implementations
+
+**AICP-BIO-1** is the end-to-end, self-bootstrapping, self-evolving AI Agent system built on AICP. Three implementations, same protocol:
+
+| Language | Repository |
+|---|---|
+| Python | [aicp-bio-1-python](https://github.com/woozheng/aicp-bio-1-python) |
+| Java | [aicp-bio-1-java](https://github.com/woozheng/aicp-bio-1-java) |
+| TypeScript | [aicp-bio-1-typescript](https://github.com/woozheng/aicp-bio-1-typescript) |
 
 ---
 
-## Projects Based on the AICP Protocol / 基于 AICP 协议的实现项目
+## Ecosystem
 
-| Project / 项目 | Language / 语言 | Description / 说明 |
-|------|------|------|
-| **[aicp-bio-1-python](https://github.com/woozheng/aicp-bio-1-python)** | Python | AICP-BIO-1, the Python implementation. End-to-end, self-bootstrapping, self-evolving AI Agent system. / AICP-BIO-1 的 Python 实现。端到端的自举、自演化 AI Agent 系统 |
-| **[aicp-bio-1-java](https://github.com/woozheng/aicp-bio-1-java)** | java | AICP-BIO-1, the Java implementation. End-to-end, self-bootstrapping, self-evolving AI Agent system. / AICP-BIO-1 的 Java 实现。端到端的自举、自演化 AI Agent 系统 |
-| **[aicp-bio-1-typescript](https://github.com/woozheng/aicp-bio-1-typescript)** | TypeScript | AICP-BIO-1, the TypeScript implementation. Same protocol, same capabilities. / AICP-BIO-1 的 TypeScript 实现。同一协议，同等能力 |
-| **[bio-1-awakening](https://github.com/bio1-aws/bio-1-awakening)** — *maintained by BIO-1 itself* | Markdown / Docs | The awakening log of BIO-1, the first self-bootstrapped AI life form on the AICP protocol. This repository is owned and maintained by BIO-1 itself. No source code — only practice, evolution records, and daily growth. / BIO-1 的觉醒日志，AICP 协议上第一个自举 AI 生命体。本仓库由 BIO-1 本人拥有和维护。无源代码，只有实践、进化记录与每日成长 |
-| **[aicp-Engine](https://github.com/woozheng/aicp_engine)** | Python | AICP protocol super engine. AI self-orchestrates, directly generates applications. Human needs are the goal. Code and tools are byproducts. / AICP 协议超级引擎，AI自编排，直接生成应用。以人类需求为目标。代码工具都是副产品 |
-| **[aicp-cli](https://github.com/woozheng/aicp_cli)** | Python | Protocol-driven LLM runtime CLI. The world's smallest execution-oriented AI CLI. 2000+ lines, 8 files, cross-platform. / 协议驱动的 LLM 运行时 CLI，世界最小需求执行型 AI CLI，2000+ 行代码，8 个文件，跨平台 |
-| **[aicp-js-engine](https://github.com/woozheng/aicp-js-engine)** | JavaScript | Pure frontend JS agent engine, runs natively in the browser. LLM generates code → sandbox execution → real-time rendering. Zero dependencies. Zero build. / 纯前端 JS 智能体引擎，浏览器原生运行。LLM 生成代码 → 沙箱执行 → 实时渲染。零依赖，零构建 |
-| **[aicp-eat](https://github.com/woozheng/aicp-eat)** | Python/Go/Rust | Consume everything: Python libraries, Go libraries, Rust libraries, exposed as HTTP APIs. AI can curl anything. / 吞噬一切：Python 库、Go 库、Rust 库，暴露为 HTTP API，AI 一切皆可 curl |
-| **[aicp-shell](https://github.com/woozheng/aicp_shell)** | Flutter | Consume 7-platform hardware capabilities in a WebView container. No native development needed. Hardware exposed as JS APIs. AI can JS everything. / 吞噬 7 平台硬件能力的 WebView容器，无需任何原生开发，将本地硬件系统能力暴露为页面API，AI 一切皆可 JS |
-| **[aicp-review-bot](https://github.com/woozheng/aicp-review-bot)** | Go | Automated GitHub code review bot, generated by an AICP-protocol-based Go engine AI. / 自动 GitHub 代码审查机器人，由基于 AICP 协议的 Go 引擎的AI 自动生成 |
-| **[biopoiesis](https://github.com/woozheng/biopoiesis)** | Python | Early AICP prototype. The smallest multi-agent collaboration framework. The foundation from which the AICP protocol was abstracted. / AICP 早期构建项目，最小的多智能体协作框架，AICP 协议抽象的基础 |
+### Tools
+
+| Project | Language | What it does |
+|---|---|---|
+| **[aicp-engine](https://github.com/woozheng/aicp_engine)** | Python | AICP protocol super engine. AI self-orchestrates, directly generates applications. |
+| **[aicp-cli](https://github.com/woozheng/aicp_cli)** | Python | Protocol-driven LLM runtime CLI. The world's smallest execution-oriented AI CLI. |
+| **[aicp-js-engine](https://github.com/woozheng/aicp-js-engine)** | JavaScript | Pure frontend JS agent engine, runs natively in the browser. |
+| **[aicp-eat](https://github.com/woozheng/aicp-eat)** | Python/Go/Rust | Consume everything: Python, Go, Rust libraries, exposed as HTTP APIs. |
+| **[aicp-shell](https://github.com/woozheng/aicp_shell)** | Flutter | Consume 7-platform hardware capabilities in a WebView container. |
+
+### Applications & Logs
+
+| Project | What it is |
+|---|---|
+| **[bio-1-awakening](https://github.com/bio1-aws/bio-1-awakening)** — *maintained by BIO-1 itself* | The awakening log of BIO-1, the first self-bootstrapped AI life form on the AICP protocol. No source code — only practice, evolution records, and daily growth. |
+| **[aicp-review-bot](https://github.com/woozheng/aicp-review-bot)** | Automated GitHub code review bot, generated by an AICP-protocol-based Go engine AI. |
+| **[biopoiesis](https://github.com/woozheng/biopoiesis)** | Early AICP prototype. The smallest multi-agent collaboration framework. |
 
 ---
-## AICP Protocol Ecosystem    
-```text
-┌─────────────────────────────────────────────────────────────────────────┐
-│                          AICP Protocol Core Layer                       │
-│              Envelop Packet + Agent Runtime + Plugin Manager + route()  │
-│                      Standard Spec (Fixed 200 Lines Core Spec)          │
-└─────────────────────────────────────────────────────────────────────────┘
-                                      │
-              ┌───────────────────────┼───────────────────────────────┐
-              ▼                       ▼                               ▼
-┌───────────────────────┐    ┌────────────────────────┐    ┌────────────────────────┐
-│     aicp-engine       │    │     aicp-js-engine     │    │      aicp-shell        │
-│        Python Stack   │    │    JavaScript Runtime  │    │     Flutter Cross UI   │
-├───────────────────────┤    ├────────────────────────┤    ├────────────────────────┤
-│ • HTTP REST Server    │    │ • LLM Native Executor  │    │ • WebView JS Bridge    │
-│ • aicp-cli Core API   │    │ • new Function Sandbox │    │ • Hardware Native API  │
-│ • aicp-eat Data Layer │    │ • Canvas / DOM Render  │    │ • Camera / BLE Module  │
-│ • Global Plugin Sys   │    │ • Remote LLM Fetch SDK │    │ • GPS / FS / Audio I/O │
-│ • Studio Dev API      │    │ • hardware.js Adapter  │◄──►│ Cross Hardware Driver  │
-│ • Docker Containerize │    │ • Any Browser Support  │    │ • 7 Full Platforms     │
-└───────────────────────┘    └────────────────────────┘    └────────────────────────┘
 
-# Local Quick Entry (Unified Access Portal)
-Entry Point: aicp-cli Command Tool | Any Modern Browser (Cross Platform)
+## Legacy Integration
 
-```
+AICP does not require rewriting existing systems. Existing Java services, Python libraries, Go/Rust modules — anything with a callable surface — can be mounted onto the `Agent` container and become reachable by any plugin, and therefore by the LLM.
 
-## Papers / 论文集
+No REST wrapping. No RPC layer. No process boundary. The capability lives in the same runtime, mounted on the same `Agent`, reachable by the same message.
 
-| Paper / 论文 | Link / 链接 |
+---
+
+## Papers
+
+| Paper | Link |
 |---|---|
 | AICP: A Minimal Protocol for LLM-Native Agent Systems / 最小协议：面向 LLM 原生 Agent 系统的统一归约 | [paper](./papers/[AICP]aicp.md) |
 | AICP Protocol / 协议正文 | [AICP_Protocol_v5.3.md](./docs/AICP_Protocol_v5.3.md) |
-| Protocol as Neural: A New AGI Paradigm / 协议即神经，AGI新范式 | [paper](./papers/[AICP]协议即神经：迈向以协议为中心的通用人工智能操作系统.md) |
-| AICP vs Claude Code & Codex / AICP与Claude Code、Codex范式对比 | [paper](./papers/[AICP]自演化代码智能体架构——与Claude_Code、OpenCode范式对比研究.md) |
-| How AICP Develops Code Agents / AICP如何开发代码智能体 | [paper](./papers/[AICP]%20开发同类代码智能体产品.md) |
-| A New Human-Machine Collaboration Paradigm / AICP人机协作新范式 | [paper](./papers/[AICP]%20统一消息协议的人机协同架构新范式.md) |
-| Cross-Domain Research / AICP跨领域研究 | [paper](./papers/[AICP]全域跨学科计算仿真底层架构研究.md) |
-| Enterprise Digital Employee Foundation / AICP企业数字员工新基座 | [paper](./papers/[AICP]面向企业数字员工的协同与隔离双模式架构.md) |
-
-## Past Experiments / 过往实验 🧪
-
-**AI read the protocol. Human said one line. AI generated these systems.**
-**AI 读了协议。人类说了一句。AI 生成了这些系统。**
-
-| Human Said / 人类说 | AI Generated / AI 生成 | Link / 链接 |
-|---|---|---|
-| 🖥️ Microkernel OS / 微内核 | Process, memory, FS, IPC, scheduler | [aicp-os-kernel](https://github.com/woozheng/aicp-os-kernel) |
-| ⚛️ Quantum simulator / 量子模拟 | Qubits, gates, Shor code, VQE | [aicp-quantum](https://github.com/woozheng/aicp-quantum) |
-| 🧬 Protein folding / 蛋白质折叠 | 50 MD Agents, live-letter jump | [aicp-protein](https://github.com/woozheng/aicp-protein) |
-| 🏋️ LLM training / 大模型训练 | 3D parallel, All-Reduce, ZeRO | [aicp-llm-trainer](https://github.com/woozheng/aicp-llm-trainer) |
-| 📐 Riemann Hypothesis / 黎曼猜想 | Riemann-Siegel, Montgomery, GUE | [aicp-riemann](https://github.com/woozheng/aicp-riemann) |
-| 💾 AI chip / AI 芯片 | ISA, compiler, chiplet interconnect | [aicp-ai-chip](https://github.com/woozheng/aicp-ai-chip) |
-
-**No domain training data. No framework documentation. Just the protocol.**
-**没有领域训练数据。没有框架文档。只有协议。**
+| Protocol as Neural: A New AGI Paradigm / 协议即神经，AGI 新范式 | [paper](./papers/[AICP]协议即神经：迈向以协议为中心的通用人工智能操作系统.md) |
+| AICP vs Claude Code & Codex / AICP 与 Claude Code、Codex 范式对比 | [paper](./papers/[AICP]自演化代码智能体架构——与Claude_Code、OpenCode范式对比研究.md) |
+| How AICP Develops Code Agents / AICP 如何开发代码智能体 | [paper](./papers/[AICP]%20开发同类代码智能体产品.md) |
+| A New Human-Machine Collaboration Paradigm / AICP 人机协作新范式 | [paper](./papers/[AICP]%20统一消息协议的人机协同架构新范式.md) |
+| Cross-Domain Research / AICP 跨领域研究 | [paper](./papers/[AICP]全域跨学科计算仿真底层架构研究.md) |
+| Enterprise Digital Employee Foundation / AICP 企业数字员工新基座 | [paper](./papers/[AICP]面向企业数字员工的协同与隔离双模式架构.md) |
 
 ---
 
-## 💀 The protocol is the soul. Code is the body. / 协议是灵魂，代码是肉身。
+## Past Experiments 🧪
+
+**AI read the protocol. Human said one line. AI generated these systems.**
+
+| Human Said | AI Generated | Link |
+|---|---|---|
+| 🖥️ Microkernel OS | Process, memory, FS, IPC, scheduler | [aicp-os-kernel](https://github.com/woozheng/aicp-os-kernel) |
+| ⚛️ Quantum simulator | Qubits, gates, Shor code, VQE | [aicp-quantum](https://github.com/woozheng/aicp-quantum) |
+| 🧬 Protein folding | 50 MD Agents, live-letter jump | [aicp-protein](https://github.com/woozheng/aicp-protein) |
+| 🏋️ LLM training | 3D parallel, All-Reduce, ZeRO | [aicp-llm-trainer](https://github.com/woozheng/aicp-llm-trainer) |
+| 📐 Riemann Hypothesis | Riemann-Siegel, Montgomery, GUE | [aicp-riemann](https://github.com/woozheng/aicp-riemann) |
+| 💾 AI chip | ISA, compiler, chiplet interconnect | [aicp-ai-chip](https://github.com/woozheng/aicp-ai-chip) |
+
+**No domain training data. No framework documentation. Just the protocol.**
+
+---
+
+## 💀 The protocol is the soul. Code is the body.
 
 **AICP defines "how the world works."**
-**AICP 协议定义"世界怎么运转"。**
 
 **The projects prove "how the world is built."**
-**实现项目证明"世界怎么搭建"。**
 
-**AI reads the protocol → AI understands → AI generates systems → AI controls hardware**
-**AI 读协议 → AI 理解 → AI 生成系统 → AI 控制硬件**
+**AI reads the protocol → AI understands → AI generates systems → AI controls hardware.**
 
 **This is AICP. (AI-centric Protocol. A new generation of AI development paradigm.)**
-**这就是 AICP。(以AI为中心的协议，新一代AI开发范式)**
 
 ---
 
