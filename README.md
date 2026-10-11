@@ -107,6 +107,7 @@ No REST wrapping. No RPC layer. No process boundary. The capability lives in the
 | Paper | Link |
 |---|---|
 | AICP: A Minimal Protocol for LLM-Native Agent Systems / 最小协议：面向 LLM 原生 Agent 系统的统一归约 | [paper](./papers/[AICP]aicp.md) |
+| Architecture as a Variable in LLM-Based Software Generation / 架构作为 LLM 软件生成中的变量 | [paper](./papers/[AICP]architecture-as-a-variable.md) |
 | AICP Protocol / 协议正文 | [AICP_Protocol_v5.3.md](./docs/AICP_Protocol_v5.3.md) |
 | Protocol as Neural: A New AGI Paradigm / 协议即神经，AGI 新范式 | [paper](./papers/[AICP]协议即神经：迈向以协议为中心的通用人工智能操作系统.md) |
 | AICP vs Claude Code & Codex / AICP 与 Claude Code、Codex 范式对比 | [paper](./papers/[AICP]自演化代码智能体架构——与Claude_Code、OpenCode范式对比研究.md) |
